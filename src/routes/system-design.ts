@@ -13,9 +13,6 @@ import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
-// ===== PROTECTED ROUTES (Require authentication) =====
-// All System Design routes now require login
-
 router.get('/', authMiddleware, getAllResources);
 router.get('/featured', authMiddleware, getFeaturedResources);
 router.get('/search', authMiddleware, searchResources);

@@ -1,3 +1,4 @@
+//src/routes/subscribers.ts
 import express from 'express';
 import {
   subscribe,
@@ -11,14 +12,14 @@ import { authMiddleware, adminOnly } from '../middleware/auth';
 
 const router = express.Router();
 
-// ===== PUBLIC ROUTES =====
-router.post('/subscribe', subscribe);                    // Homepage subscription
-router.delete('/unsubscribe/:email', unsubscribe);       // Unsubscribe link
-router.get('/stats', getStats);                          // Basic stats
-router.get('/count', getSubscriberCount);                // Detailed count
-router.get('/referrals/:email', getReferralStats);       // Referral stats
+// Public routes
+router.post('/subscribe', subscribe);
+router.delete('/unsubscribe/:email', unsubscribe);
+router.get('/stats', getStats);
+router.get('/count', getSubscriberCount);
+router.get('/referrals/:email', getReferralStats);
 
-// ===== ADMIN ROUTES =====
-router.get('/', authMiddleware, adminOnly, getAllSubscribers);  // List all subscribers (Admin only)
+// Admin routes
+router.get('/', authMiddleware, adminOnly, getAllSubscribers);
 
 export default router;

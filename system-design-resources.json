@@ -1,0 +1,712 @@
+{
+  "metadata": {
+    "generatedAt": "2026-01-13T12:30:21.828Z",
+    "generatedDate": "Tuesday, January 13, 2026",
+    "totalResources": 183,
+    "topFeatured": 30,
+    "poweredBy": "Gemini AI + GitHub + YouTube + Engineering Blogs",
+    "sources": {
+      "github": 140,
+      "youtube": 28,
+      "blogs": 15
+    }
+  },
+  "featuredResources": [
+    {
+      "rank": 1,
+      "title": "8 Data Structures That Power Your Databases",
+      "url": "https://bytebytego.com/guides/8-data-structures-that-power-your-databases",
+      "description": "Learn about 8 data structures that power your databases with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Fundamentals",
+      "difficulty": "Advanced",
+      "score": 10,
+      "reasoning": "An exceptional deep dive into the fundamental data structures powering databases. Essential for understanding performance, indexing, and storage. Highly educational and practical.",
+      "topics": [
+        "Database"
+      ],
+      "keyLearnings": [
+        "B-Trees",
+        "LSM-Trees",
+        "Hash Tables",
+        "Database indexing principles"
+      ],
+      "estimatedTime": 30,
+      "hasVisuals": true
+    },
+    {
+      "rank": 2,
+      "title": "7 Must-Know Strategies to Scale Your Database",
+      "url": "https://bytebytego.com/guides/7-must-know-strategies-to-scale-your-database",
+      "description": "Learn about 7 must-know strategies to scale your database with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Advanced",
+      "difficulty": "Intermediate",
+      "score": 10,
+      "reasoning": "Offers highly actionable and critical strategies for scaling databases, covering a range of essential techniques. Extremely practical and well-explained with visuals.",
+      "topics": [
+        "Scalability",
+        "Database"
+      ],
+      "keyLearnings": [
+        "Vertical vs Horizontal scaling",
+        "Sharding",
+        "Replication",
+        "Caching",
+        "Read replicas"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 3,
+      "title": "How to Design Google Docs",
+      "url": "https://bytebytego.com/guides/how-to-design-google-docs",
+      "description": "Learn about how to design google docs with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 10,
+      "reasoning": "An outstanding and visually rich deep dive into designing Google Docs, covering complex topics like real-time collaboration and conflict resolution. It's a gold standard for case studies and interview preparation.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Operational Transformation (OT) vs. CRDTs",
+        "Real-time collaboration architectures",
+        "Eventual consistency models",
+        "WebSocket usage and server-side logic"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 4,
+      "title": "Design Google Maps",
+      "url": "https://bytebytego.com/guides/design-google-maps",
+      "description": "Learn about design google maps with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 10,
+      "reasoning": "An exceptional and visually comprehensive article on designing Google Maps. It tackles complex geospatial data, routing, and real-time updates, making it an excellent resource for advanced system design.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Geospatial indexing (e.g., Quadtree, Geohash)",
+        "Map tile generation and serving",
+        "Routing algorithms and traffic data",
+        "Real-time updates and data ingestion"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 5,
+      "title": "HTTPS, SSL Handshake, and Data Encryption Explained",
+      "url": "https://bytebytego.com/guides/https-ssl-handshake-and-data-encryption-explained-to-kids",
+      "description": "Learn about https, ssl handshake, and data encryption explained with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 10,
+      "reasoning": "An exceptionally clear, comprehensive, and visually rich explanation of HTTPS, SSL handshake, and data encryption, demystifying a complex, critical topic.",
+      "topics": [
+        "Security",
+        "Networking"
+      ],
+      "keyLearnings": [
+        "HTTPS mechanism",
+        "SSL/TLS handshake steps",
+        "Symmetric vs asymmetric encryption in HTTPS"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 6,
+      "title": "How YouTube Handles Massive Video Uploads",
+      "url": "https://bytebytego.com/guides/how-does-youtube-handle-massive-video-content-upload",
+      "description": "Learn about how youtube handles massive video uploads with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 9.5,
+      "reasoning": "An outstanding case study on designing a large-scale video upload and processing system like YouTube. Provides deep insights into distributed storage, encoding, and CDN, highly educational.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Distributed storage",
+        "video encoding pipelines",
+        "CDN",
+        "fault tolerance",
+        "large file uploads"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 7,
+      "title": "How Netflix Scales Push Messaging",
+      "url": "https://bytebytego.com/guides/how-does-netflix-scale-push-messaging-for-millions-of-devices",
+      "description": "Learn about how netflix scales push messaging with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 9.5,
+      "reasoning": "A deep dive into Netflix's specific challenges and solutions for scaling push messaging to massive user bases. Offers advanced insights into high-throughput, distributed messaging systems.",
+      "topics": [
+        "Scalability"
+      ],
+      "keyLearnings": [
+        "Scaling real-time messaging",
+        "distributed systems",
+        "high-throughput architectures",
+        "fault tolerance"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 8,
+      "title": "Netflix's Overall Architecture",
+      "url": "https://bytebytego.com/guides/netflixs-overall-architecture",
+      "description": "Learn about netflix's overall architecture with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 9.5,
+      "reasoning": "An excellent high-level overview of Netflix's overall architecture, covering microservices, CDNs, data pipelines, and recommendation engines. Essential for understanding large-scale cloud-native systems.",
+      "topics": [
+        "Architecture"
+      ],
+      "keyLearnings": [
+        "Microservice architecture",
+        "CDN",
+        "data pipelines",
+        "recommendation systems",
+        "cloud-native design"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 9,
+      "title": "Evolution of the Netflix API Architecture",
+      "url": "https://bytebytego.com/guides/evolution-of-the-netflix-api-architecture",
+      "description": "Learn about evolution of the netflix api architecture with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 9.5,
+      "reasoning": "A highly insightful look into the evolution of Netflix's API architecture, from initial design to scaling for diverse clients and massive traffic. Crucial for advanced API design and microservice integration.",
+      "topics": [
+        "API",
+        "Architecture"
+      ],
+      "keyLearnings": [
+        "API Gateway evolution",
+        "microservice API design",
+        "client-specific APIs",
+        "backend for frontend (BFF) pattern"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 10,
+      "title": "Twitter Architecture 2022 vs. 2012",
+      "url": "https://bytebytego.com/guides/twitter-architecture-2022-vs-2012",
+      "description": "Learn about twitter architecture 2022 vs. 2012 with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 9.5,
+      "reasoning": "An exceptional comparison showcasing the architectural transformation of Twitter over a decade. Provides profound insights into scaling challenges, tech debt, and modernizing a massive real-time system.",
+      "topics": [
+        "Architecture"
+      ],
+      "keyLearnings": [
+        "Architectural evolution",
+        "scaling challenges",
+        "microservices adoption",
+        "real-time data processing",
+        "database migration"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 11,
+      "title": "Evolution of Uber's API Layer",
+      "url": "https://bytebytego.com/guides/evolution-of-uber's-api-layer",
+      "description": "Learn about evolution of uber's api layer with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Advanced",
+      "score": 9.5,
+      "reasoning": "Detailed analysis of Uber's API layer evolution, focusing on challenges related to geo-spatial data and real-time updates. Invaluable for designing APIs for complex, distributed, and real-time services.",
+      "topics": [
+        "API"
+      ],
+      "keyLearnings": [
+        "API Gateway",
+        "geo-spatial data handling",
+        "real-time updates",
+        "microservices communication",
+        "API versioning"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 12,
+      "title": "Study guide",
+      "url": "https://github.com/donnemartin/system-design-primer#study-guide",
+      "description": "What you are asked in an interview depends on variables such as:",
+      "source": "github-system-design-primer",
+      "type": "guide",
+      "category": "Fundamentals",
+      "difficulty": "Beginner",
+      "score": 9,
+      "reasoning": "Provides a clear and comprehensive study guide, organizing various system design topics effectively. The presence of visuals enhances the learning path, making it highly practical for structuring study.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "System design topics overview",
+        "Interview preparation strategy",
+        "Resource organization"
+      ],
+      "estimatedTime": 10,
+      "hasVisuals": true
+    },
+    {
+      "rank": 13,
+      "title": "System design interview questions with solutions",
+      "url": "https://github.com/donnemartin/system-design-primer#system-design-interview-questions-with-solutions",
+      "description": "[View exercise and solution](solutions/system_design/pastebin/README.md)",
+      "source": "github-system-design-primer",
+      "type": "guide",
+      "category": "Interview Problems",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "This resource provides practical examples of system design interview questions with well-explained solutions. The inclusion of visuals is a significant plus, making complex solutions easier to grasp and apply.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Example system design problem",
+        "Solution breakdown",
+        "Design considerations"
+      ],
+      "estimatedTime": 30,
+      "hasVisuals": true
+    },
+    {
+      "rank": 14,
+      "title": "Appendix",
+      "url": "https://github.com/donnemartin/system-design-primer#appendix",
+      "description": "You'll sometimes be asked to do 'back-of-the-envelope' estimates.  For example, you might need to determine how long it will take to generate 100 image thumbnails from disk or how much memory a data structure will take.  The **Powers of two table** and **Latency numbers every programmer should know** are handy references.",
+      "source": "github-system-design-primer",
+      "type": "guide",
+      "category": "Fundamentals",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Excellent resource for 'back-of-the-envelope' estimations, a critical skill for system designers. The content is clear, practical, and the presence of visuals (implied for calculations) significantly aids understanding and application.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Back-of-the-envelope calculations",
+        "Capacity planning",
+        "System sizing"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 15,
+      "title": "What makes HTTP2 faster than HTTP1?",
+      "url": "https://bytebytego.com/guides/what-makes-http2-faster-than-http1",
+      "description": "Learn about what makes http2 faster than http1? with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Excellent explanation of HTTP/2's performance advantages over HTTP/1, using effective visuals to illustrate complex concepts like multiplexing and server push.",
+      "topics": [
+        "Networking"
+      ],
+      "keyLearnings": [
+        "HTTP/2 multiplexing",
+        "Header compression (HPACK)",
+        "Server push",
+        "Stream prioritization"
+      ],
+      "estimatedTime": 15,
+      "hasVisuals": true
+    },
+    {
+      "rank": 16,
+      "title": "Reverse Proxy vs. API Gateway vs. Load Balancer",
+      "url": "https://bytebytego.com/guides/reverse-proxy-vs-api-gateway-vs-load-balancer",
+      "description": "Learn about reverse proxy vs. api gateway vs. load balancer with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Provides a highly valuable and clear comparison of reverse proxies, API gateways, and load balancers, addressing a common point of confusion with excellent visuals.",
+      "topics": [
+        "Load Balancing",
+        "API",
+        "Networking"
+      ],
+      "keyLearnings": [
+        "Reverse proxy functionality",
+        "API Gateway features",
+        "Load balancer roles",
+        "Choosing the right component"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 17,
+      "title": "Load Balancer vs. API Gateway",
+      "url": "https://bytebytego.com/guides/what-are-the-differences-between-a-load-balancer-and-an-api-gateway",
+      "description": "Learn about load balancer vs. api gateway with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Effectively differentiates between load balancers and API gateways, highlighting their distinct roles and complementary nature in system architecture with clear visuals.",
+      "topics": [
+        "Load Balancing",
+        "API"
+      ],
+      "keyLearnings": [
+        "Load balancer primary functions",
+        "API Gateway advanced features",
+        "When to use each",
+        "Complementary roles in architecture"
+      ],
+      "estimatedTime": 15,
+      "hasVisuals": true
+    },
+    {
+      "rank": 18,
+      "title": "API Gateway 101",
+      "url": "https://bytebytego.com/guides/api-gateway-101",
+      "description": "Learn about api gateway 101 with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "An excellent '101' guide to API Gateways, thoroughly explaining their purpose, benefits, and core features, supported by high-quality visual aids.",
+      "topics": [
+        "API"
+      ],
+      "keyLearnings": [
+        "API Gateway core functions",
+        "Benefits for microservices",
+        "Common API Gateway features",
+        "Centralized API management"
+      ],
+      "estimatedTime": 15,
+      "hasVisuals": true
+    },
+    {
+      "rank": 19,
+      "title": "What is a Load Balancer?",
+      "url": "https://bytebytego.com/guides/what-is-a-load-balancer",
+      "description": "Learn about what is a load balancer? with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Beginner",
+      "score": 9,
+      "reasoning": "A fundamental and highly educational piece on what a load balancer is, its importance, and basic functionalities, presented with ByteByteGo's excellent visuals.",
+      "topics": [
+        "Load Balancing"
+      ],
+      "keyLearnings": [
+        "Load balancer definition",
+        "Why load balancers are needed",
+        "Basic load balancing algorithms",
+        "Improving system reliability"
+      ],
+      "estimatedTime": 15,
+      "hasVisuals": true
+    },
+    {
+      "rank": 20,
+      "title": "HTTP/1 -> HTTP/2 -> HTTP/3",
+      "url": "https://bytebytego.com/guides/http1-http2-http3",
+      "description": "Learn about http/1 -> http/2 -> http/3 with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Provides a comprehensive and visually engaging overview of the evolution of HTTP protocols, highlighting key advancements from HTTP/1 to HTTP/3.",
+      "topics": [
+        "Networking"
+      ],
+      "keyLearnings": [
+        "Evolution of HTTP protocols",
+        "Performance benefits of HTTP/2 and HTTP/3",
+        "Underlying transport protocols (TCP vs UDP)",
+        "Impact on web performance"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 21,
+      "title": "How to Design Effective and Safe APIs",
+      "url": "https://bytebytego.com/guides/how-do-we-design-effective-and-safe-apis",
+      "description": "Learn about how to design effective and safe apis with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Offers valuable insights and practical guidance on designing robust, effective, and secure APIs, covering critical aspects with clear explanations and visuals.",
+      "topics": [
+        "API"
+      ],
+      "keyLearnings": [
+        "API versioning strategies",
+        "Error handling best practices",
+        "Authentication and authorization",
+        "API documentation importance"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 22,
+      "title": "What Does an API Gateway Do?",
+      "url": "https://bytebytego.com/guides/what-does-api-gateway-do",
+      "description": "Learn about what does an api gateway do? with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Excellent explanation of the fundamental role and benefits of an API Gateway in modern microservice architectures, supported by clear visuals. Very high practical applicability.",
+      "topics": [
+        "API"
+      ],
+      "keyLearnings": [
+        "API Gateway functions",
+        "microservice architecture",
+        "traffic management",
+        "security"
+      ],
+      "estimatedTime": 15,
+      "hasVisuals": true
+    },
+    {
+      "rank": 23,
+      "title": "McDonald’s Event-Driven Architecture",
+      "url": "https://bytebytego.com/guides/mcdonald's-event-driven-architecture",
+      "description": "Learn about mcdonald’s event-driven architecture with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Illustrates Event-Driven Architecture concepts through a relatable real-world example (McDonald's). Clearly explains components and benefits, making complex ideas accessible and highly applicable.",
+      "topics": [
+        "Architecture"
+      ],
+      "keyLearnings": [
+        "Event-driven architecture",
+        "microservices communication",
+        "message queues",
+        "scalability with events"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 24,
+      "title": "How to Design Stack Overflow",
+      "url": "https://bytebytego.com/guides/how-will-you-design-the-stack-overflow-website",
+      "description": "Learn about how to design stack overflow with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Interview Problems",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "A classic system design problem broken down effectively, covering essential components and scaling strategies for a Q&A platform. Excellent for learning system design thinking and interview preparation.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Database schema design",
+        "search architecture",
+        "caching strategies",
+        "scaling read-heavy systems"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    },
+    {
+      "rank": 25,
+      "title": "How Does a Typical Push Notification System Work?",
+      "url": "https://bytebytego.com/guides/how-does-a-typical-push-notification-system-work",
+      "description": "Learn about how does a typical push notification system work? with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Clearly explains the architecture and flow of a typical push notification system, including client-side, server-side, and platform services. Highly practical given the ubiquity of push notifications.",
+      "topics": [
+        "System Design"
+      ],
+      "keyLearnings": [
+        "Push notification architecture",
+        "long polling",
+        "WebSockets",
+        "platform services (FCM/APNs)"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 26,
+      "title": "Netflix Tech Stack - Databases",
+      "url": "https://bytebytego.com/guides/netflix-tech-stack-databases",
+      "description": "Learn about netflix tech stack - databases with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Provides excellent insights into Netflix's diverse database choices and their specific use cases. Demonstrates polyglot persistence and the rationale behind selecting different database types for a large-scale system.",
+      "topics": [
+        "Database"
+      ],
+      "keyLearnings": [
+        "Polyglot persistence",
+        "database selection criteria",
+        "use cases for NoSQL",
+        "NewSQL"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 27,
+      "title": "Evolution of Airbnb’s Microservice Architecture",
+      "url": "https://bytebytego.com/guides/evolution-of-airbnb's-microservice",
+      "description": "Learn about evolution of airbnb’s microservice architecture with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Case Studies",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Details the evolution of Airbnb's architecture from monolith to microservices, providing valuable lessons on motivations, challenges, and patterns involved in such a transition. Highly applicable for architectural planning.",
+      "topics": [
+        "Architecture"
+      ],
+      "keyLearnings": [
+        "Monolith to microservice migration",
+        "architectural patterns",
+        "challenges of distributed systems",
+        "service discovery"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 28,
+      "title": "Types of Message Queues",
+      "url": "https://bytebytego.com/guides/types-of-message-queue",
+      "description": "Learn about types of message queues with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Clearly explains different types of message queues, their patterns (pub/sub, point-to-point), and common implementations. Fundamental knowledge for building robust and scalable distributed systems.",
+      "topics": [
+        "Message Queue"
+      ],
+      "keyLearnings": [
+        "Message queue patterns",
+        "asynchronous communication",
+        "durability",
+        "scalability",
+        "common message queue systems"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 29,
+      "title": "Database Isolation Levels",
+      "url": "https://bytebytego.com/guides/what-are-database-isolation-levels",
+      "description": "Learn about database isolation levels with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Excellent visual explanation of fundamental database isolation levels, crucial for understanding transactional behavior and concurrency. Highly practical for database design.",
+      "topics": [
+        "Database"
+      ],
+      "keyLearnings": [
+        "ACID properties",
+        "Transaction isolation levels",
+        "Concurrency issues (dirty reads, phantom reads)"
+      ],
+      "estimatedTime": 20,
+      "hasVisuals": true
+    },
+    {
+      "rank": 30,
+      "title": "How to Decide Which Type of Database to Use",
+      "url": "https://bytebytego.com/guides/how-do-you-decide-which-type-of-database-to-use",
+      "description": "Learn about how to decide which type of database to use with visual explanations from ByteByteGo.",
+      "source": "github-bytebyteGo",
+      "type": "article",
+      "category": "Intermediate",
+      "difficulty": "Intermediate",
+      "score": 9,
+      "reasoning": "Provides a practical framework and considerations for choosing the right database type based on use cases and requirements. Strong visual guidance.",
+      "topics": [
+        "Database"
+      ],
+      "keyLearnings": [
+        "Database selection criteria",
+        "SQL vs NoSQL tradeoffs",
+        "Data model considerations"
+      ],
+      "estimatedTime": 25,
+      "hasVisuals": true
+    }
+  ]
+}

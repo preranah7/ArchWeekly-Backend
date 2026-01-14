@@ -1,0 +1,191 @@
+{
+  "metadata": {
+    "generatedAt": "2026-01-09T04:14:03.319Z",
+    "generatedDate": "Friday, January 9, 2026",
+    "totalScraped": 22,
+    "topSelected": 12,
+    "poweredBy": "Gemini AI + Custom Scrapers"
+  },
+  "topArticles": [
+    {
+      "rank": 1,
+      "title": "How Workers powers our internal maintenance scheduling pipeline",
+      "url": "https://blog.cloudflare.com/building-our-maintenance-scheduler-on-workers/",
+      "source": "cloudflare",
+      "description": "Physical data center maintenance is risky on a global network. We built a maintenance scheduler on Workers to safely plan disruptive operations, while solving scaling challenges by viewing the state of our infrastructure through a graph interface on top of multiple data sources and metrics pipelines",
+      "score": 9.5,
+      "category": "DevOps",
+      "reasoning": "Outstanding. This article details how Cloudflare uses its own Workers platform to build a critical internal maintenance scheduling pipeline for its global network. It combines real-world production experience with deep technical insights into building resilient, scalable internal tooling using serverless architecture.",
+      "keyInsights": [
+        "Automating complex maintenance operations",
+        "Leveraging serverless for internal tooling",
+        "Building resilient global infrastructure management systems"
+      ]
+    },
+    {
+      "rank": 2,
+      "title": "Code Orange: Fail Small — our resilience plan following recent incidents",
+      "url": "https://blog.cloudflare.com/fail-small-resilience-plan/",
+      "source": "cloudflare",
+      "description": "We have declared “Code Orange: Fail Small” to focus everyone at Cloudflare on a set of high-priority workstreams with one simple goal: ensure that the cause of our last two global outages never happens again.",
+      "score": 9.5,
+      "category": "DevOps",
+      "reasoning": "Exceptional. Cloudflare's 'Code Orange: Fail Small' initiative is a direct, public, and actionable response to major incidents, focusing on resilience engineering, incident prevention, and SRE best practices. It offers invaluable insights into how a major internet company approaches fundamental challenges of reliability.",
+      "keyInsights": [
+        "Principles of 'fail small' in resilience engineering",
+        "Cloudflare's post-incident response and strategy",
+        "Proactive measures for preventing global outages"
+      ]
+    },
+    {
+      "rank": 3,
+      "title": "The Swedbank Outage shows that Change Controls don't work",
+      "url": "http://highscalability.com/blog/2023/8/16/the-swedbank-outage-shows-that-change-controls-dont-work.html",
+      "source": "highscalability",
+      "description": "This week I&rsquo;ve been reading through the recent&nbsp;judgment from the Swedish FSA&nbsp;on the Swedbank outage. If you&rsquo;re unfamiliar with this story, Swedbank had a major outage in April 2022 that was caused by an unapproved change to their IT systems. It temporarily left nearly a million",
+      "score": 9,
+      "category": "DevOps",
+      "reasoning": "Excellent real-world case study of a major outage caused by failed change controls. Provides deep insights into the sociotechnical challenges of large systems, critiquing traditional change management and emphasizing SRE principles. Highly relevant to DevOps and system resilience.",
+      "keyInsights": [
+        "Critique of traditional change control mechanisms",
+        "Sociotechnical aspects of system failures",
+        "Lessons from large-scale financial outages"
+      ]
+    },
+    {
+      "rank": 4,
+      "title": "Lessons Learned Running Presto at Meta Scale",
+      "url": "http://highscalability.com/blog/2023/7/16/lessons-learned-running-presto-at-meta-scale.html",
+      "source": "highscalability",
+      "description": " \r\nPresto is a free, open source SQL query engine. We&rsquo;ve been using it at Meta for the past ten years, and learned a lot while doing so. Running anything at scale - tools, processes, services - takes problem solving to overcome unexpected challenges. Here are four things we learned while scali",
+      "score": 9,
+      "category": "Scalability",
+      "reasoning": "Directly from Meta, this article offers valuable lessons on operating a distributed SQL query engine like Presto at extreme scale. It promises deep technical challenges and practical solutions, crucial for anyone designing or scaling data infrastructure.",
+      "keyInsights": [
+        "Optimizing distributed query engines at extreme scale",
+        "Production challenges with Presto at Meta",
+        "Scalable data infrastructure lessons"
+      ]
+    },
+    {
+      "rank": 5,
+      "title": "The Pulse: Cloudflare’s latest outage proves dangers of global configuration changes (again)",
+      "url": "https://blog.pragmaticengineer.com/the-pulse-cloudflares-latest-outage/",
+      "source": "pragmatic",
+      "description": "Deja vu: a large Cloudflare outage caused by an instantly rolled-out global config change – two weeks after a similar problem",
+      "score": 9,
+      "category": "DevOps",
+      "reasoning": "Highly relevant. Analyzing a major Cloudflare outage caused by global configuration changes provides critical, actionable insights into incident prevention, change management, and blast radius control in large-scale distributed systems, directly applicable to SRE and DevOps practices.",
+      "keyInsights": [
+        "Risks of global configuration changes",
+        "Lessons from Cloudflare outages",
+        "Strategies for mitigating blast radius"
+      ]
+    },
+    {
+      "rank": 6,
+      "title": "Downdetector and the real cost of no upstream dependencies",
+      "url": "https://blog.pragmaticengineer.com/downdetector-and-the-real-cost-of-no-upstream-dependencies/",
+      "source": "pragmatic",
+      "description": "During the Cloudflare outage, Downdetector was also unavailable. I got details from the team about why they have a hard dependency on Cloudflare, and why that won’t change anytime soon.",
+      "score": 8.5,
+      "category": "System Design",
+      "reasoning": "Excellent analysis of Downdetector's critical dependency on Cloudflare. It offers real-world insights into architectural decisions, dependency management, and resilience trade-offs during major outages, highly relevant for system design and SRE.",
+      "keyInsights": [
+        "Managing critical upstream dependencies",
+        "Architectural resilience trade-offs",
+        "Lessons from service unavailability"
+      ]
+    },
+    {
+      "rank": 7,
+      "title": "A closer look at a BGP anomaly in Venezuela",
+      "url": "https://blog.cloudflare.com/bgp-route-leak-venezuela/",
+      "source": "cloudflare",
+      "description": "There has been speculation about the cause of a BGP anomaly observed in Venezuela on January 2. We take a look at BGP route leaks, and dive into what the data suggests caused the anomaly in question.",
+      "score": 8.5,
+      "category": "System Design",
+      "reasoning": "Highly relevant for understanding foundational internet infrastructure and network reliability. Cloudflare's deep dive into a real-world BGP anomaly provides valuable technical analysis and insights into global network incidents, indirectly affecting distributed system availability.",
+      "keyInsights": [
+        "Understanding BGP route leaks and anomalies",
+        "Internet infrastructure resilience",
+        "Cloudflare's incident analysis capabilities"
+      ]
+    },
+    {
+      "rank": 8,
+      "title": "Announcing support for GROUP BY, SUM, and other aggregation queries in R2 SQL",
+      "url": "https://blog.cloudflare.com/r2-sql-aggregations/",
+      "source": "cloudflare",
+      "description": "Cloudflare’s R2 SQL, a distributed query engine, now supports aggregations. Explore how we built distributed GROUP BY execution, using scatter-gather and shuffling strategies to run analytics directly over your R2 Data Catalog.",
+      "score": 8.5,
+      "category": "Database",
+      "reasoning": "Highly relevant for data processing and database architects. This article details the implementation of advanced aggregation queries (GROUP BY, SUM) in Cloudflare's distributed R2 SQL engine, including technical details like scatter-gather and shuffling strategies, offering insights into scalable data analytics.",
+      "keyInsights": [
+        "Distributed query engine architecture for aggregations",
+        "Scatter-gather and shuffling strategies for analytics",
+        "Serverless SQL on object storage (R2)"
+      ]
+    },
+    {
+      "rank": 9,
+      "title": "Building zero trust generative AI applications in healthcare with AWS Nitro Enclaves",
+      "url": "https://aws.amazon.com/blogs/compute/building-zero-trust-generative-ai-applications-in-healthcare-with-aws-nitro-enclaves/",
+      "source": "aws",
+      "description": "In healthcare, generative AI is transforming how \nmedical professionals analyze data, \nsummarize clinical notes, and \ngenerate insights to improve patient outcomes. From \nautomating medical documentation to assisting in \ndiagnostic reasoning, large language models (LLMs) have the potential to augmen",
+      "score": 8.5,
+      "category": "Security",
+      "reasoning": "Highly relevant. This article focuses on a cutting-edge combination of generative AI, zero-trust security, and AWS Nitro Enclaves in a highly sensitive domain (healthcare). It provides deep insights into building secure and scalable applications for critical data in the cloud.",
+      "keyInsights": [
+        "Zero trust architecture for generative AI",
+        "Securing sensitive data with AWS Nitro Enclaves",
+        "LLM applications in highly regulated environments"
+      ]
+    },
+    {
+      "rank": 10,
+      "title": "Orchestrating large-scale document processing with AWS Step Functions and Amazon Bedrock batch inference",
+      "url": "https://aws.amazon.com/blogs/compute/orchestrating-large-scale-document-processing-with-aws-step-functions-and-amazon-bedrock-batch-inference/",
+      "source": "aws",
+      "description": "Organizations often have large volumes of documents containing valuable information that remains locked away and unsearchable. This solution addresses the need for a \nscalable, automated text extraction and knowledge base pipeline that transforms static document collections into intelligent, searcha",
+      "score": 8,
+      "category": "Cloud Architecture",
+      "reasoning": "Highly relevant. This article outlines a scalable and automated pipeline for large-scale document processing using AWS Step Functions and Amazon Bedrock. It offers actionable insights into orchestrating complex AI/ML workflows and building robust data processing systems in the cloud.",
+      "keyInsights": [
+        "Scalable document processing pipelines on AWS",
+        "Orchestrating AI/ML workflows with Step Functions",
+        "Extracting knowledge from unstructured data at scale"
+      ]
+    },
+    {
+      "rank": 11,
+      "title": "PgX – Debug Postgres performance in the context of your application code",
+      "url": "https://docs.base14.io/blog/introducing-pgx/",
+      "source": "hackernews",
+      "description": "PgX – Debug Postgres performance in the context of your application code",
+      "score": 8,
+      "category": "Database",
+      "reasoning": "Highly relevant for database performance and observability. A tool that allows debugging Postgres performance in the context of application code offers valuable, actionable insights for SREs and developers struggling with database bottlenecks in production.",
+      "keyInsights": [
+        "Advanced Postgres performance debugging",
+        "Correlating database and application code performance",
+        "Observability tools for database-driven applications"
+      ]
+    },
+    {
+      "rank": 12,
+      "title": "Gossip Protocol Explained",
+      "url": "http://highscalability.com/blog/2023/7/16/gossip-protocol-explained.html",
+      "source": "highscalability",
+      "description": "You can&nbsp;subscribe to the&nbsp;system design newsletter to excel in&nbsp;system design interviews and software architecture.&nbsp;The original article was published on&nbsp;systemdesign.one&nbsp;website.\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nWhat Is Gossip Protocol?\r\nThe typical problems in a distributed system are th",
+      "score": 7.5,
+      "category": "System Design",
+      "reasoning": "A solid explanation of the Gossip Protocol, a fundamental concept in distributed systems for state propagation and consensus. While not a novel concept, a clear, technically deep explanation is always valuable for system designers. Lacks a specific production story in the snippet to push it higher.",
+      "keyInsights": [
+        "Understanding distributed system consensus",
+        "Fault tolerance mechanisms",
+        "Applications of Gossip Protocol"
+      ]
+    }
+  ]
+}

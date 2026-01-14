@@ -6,6 +6,16 @@ dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
+// Configuration constants
+const CONFIG = {
+  BATCH_SIZE: parseInt(process.env.SCORING_BATCH_SIZE || '20'),
+  BATCH_DELAY_MS: parseInt(process.env.SCORING_BATCH_DELAY || '15000'),
+  RETRY_ATTEMPTS: 3,
+  RETRY_BASE_DELAY_MS: 2000,
+  MODEL_NAME: 'gemini-2.5-flash',
+  MODEL_TEMPERATURE: 0.7,
+} as const;
+
 export interface ScoredSystemDesignResource {
   title: string;
   url: string;
@@ -24,18 +34,12 @@ export interface ScoredSystemDesignResource {
   keyLearnings: string[];
 }
 
-/**
- * Type-safe error message extractor
- */
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
-  return JSON.stringify(error);
+  return 'Unknown error occurred';
 }
 
-/**
- * Utility: Split array into chunks
- */
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < array.length; i += chunkSize) {
@@ -44,13 +48,10 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   return chunks;
 }
 
-/**
- * Utility: Retry with exponential backoff
- */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxAttempts: number = 3,
-  baseDelayMs: number = 2000 // Increased from 1000ms
+  maxAttempts: number = CONFIG.RETRY_ATTEMPTS,
+  baseDelayMs: number = CONFIG.RETRY_BASE_DELAY_MS
 ): Promise<T> {
   let attempt = 1;
   
@@ -58,22 +59,11 @@ async function retryWithBackoff<T>(
     try {
       return await fn();
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      
-      // Check if it's a 503 overload error
-      if (errorMessage.includes('503') || errorMessage.includes('overloaded')) {
-        console.log(`⚠️  Gemini API overloaded. Waiting longer before retry...`);
-      }
-      
       if (attempt === maxAttempts) {
         throw error;
       }
       
-      // Exponential backoff with jitter
       const delayMs = baseDelayMs * Math.pow(2, attempt - 1) + Math.random() * 1000;
-      console.log(`⚠️  Retry attempt ${attempt}/${maxAttempts} after ${Math.round(delayMs)}ms...`);
-      console.log(`   Error: ${errorMessage}`);
-      
       await new Promise(resolve => setTimeout(resolve, delayMs));
       attempt++;
     }
@@ -82,37 +72,26 @@ async function retryWithBackoff<T>(
   throw new Error('Retry failed');
 }
 
-/**
- * Clean and extract JSON from Gemini response
- */
 function cleanAndExtractJSON(response: string): any {
-  // Remove markdown code blocks
-  let cleaned = response.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-  cleaned = cleaned.trim();
+  let cleaned = response.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
   
-  // Extract JSON array
   const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
   if (!jsonMatch) {
     throw new Error('No valid JSON array found in response');
   }
   
-  // Parse JSON
   return JSON.parse(jsonMatch[0]);
 }
 
-/**
- * Score a single batch of resources
- */
 async function scoreBatch(
   batch: any[],
   batchOffset: number
 ): Promise<ScoredSystemDesignResource[]> {
-  // Configure model with JSON response
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
+    model: CONFIG.MODEL_NAME,
     generationConfig: {
       responseMimeType: 'application/json',
-      temperature: 0.7,
+      temperature: CONFIG.MODEL_TEMPERATURE,
     },
   });
 
@@ -180,16 +159,12 @@ Respond with ONLY the JSON array.`;
   return retryWithBackoff(async () => {
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
-    
-    // Clean and parse JSON
     const scores = cleanAndExtractJSON(responseText);
     
-    // Validate structure
     if (!Array.isArray(scores) || scores.length === 0) {
       throw new Error('Invalid scores format: expected non-empty array');
     }
     
-    // Merge scores with original resources
     const scoredResources: ScoredSystemDesignResource[] = scores
       .filter((s: any) => s.index >= 0 && s.index < batch.length)
       .map((s: any) => ({
@@ -203,51 +178,28 @@ Respond with ONLY the JSON array.`;
       }));
     
     return scoredResources;
-  }, 3, 2000); // 3 retries, 2 second base delay
+  });
 }
 
-/**
- * Score System Design resources using Gemini AI
- * Optimized for 300-350 resources with better rate limiting
- */
 export async function scoreSystemDesignResources(
   resources: any[]
 ): Promise<ScoredSystemDesignResource[]> {
-  console.log('\n🤖 Analyzing System Design resources with Gemini AI...\n');
-  
-  const BATCH_SIZE = 20; // Reduced from 15 to avoid overload
-  const DELAY_BETWEEN_BATCHES = 15000; // 2 second delay between batches
-  
-  const batches = chunkArray(resources, BATCH_SIZE);
+  const batches = chunkArray(resources, CONFIG.BATCH_SIZE);
   const allScoredResources: ScoredSystemDesignResource[] = [];
   
-  console.log(`📦 Processing ${resources.length} resources in ${batches.length} batches (${BATCH_SIZE} per batch)...\n`);
-  
-  // Process each batch
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
-    const batchOffset = i * BATCH_SIZE;
-    
-    console.log(`⚙️  Batch ${i + 1}/${batches.length}: Scoring ${batch.length} resources...`);
+    const batchOffset = i * CONFIG.BATCH_SIZE;
     
     try {
       const scoredBatch = await scoreBatch(batch, batchOffset);
       allScoredResources.push(...scoredBatch);
       
-      console.log(`✅ Batch ${i + 1} completed: ${scoredBatch.length} resources scored`);
-      console.log(`   Progress: ${allScoredResources.length}/${resources.length} (${Math.round(allScoredResources.length / resources.length * 100)}%)\n`);
-      
-      // Rate limiting: wait between batches
       if (i < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
+        await new Promise(resolve => setTimeout(resolve, CONFIG.BATCH_DELAY_MS));
       }
       
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      
-      console.error(`❌ Batch ${i + 1} failed after retries:`, errorMessage);
-      
-      // Add fallback scores for failed batch
       const fallbackScores: ScoredSystemDesignResource[] = batch.map(resource => ({
         ...resource,
         score: 5,
@@ -259,22 +211,10 @@ export async function scoreSystemDesignResources(
       }));
       
       allScoredResources.push(...fallbackScores);
-      console.log(`⚠️  Added ${fallbackScores.length} resources with fallback scores\n`);
     }
   }
   
-  // Sort by score (highest first)
   allScoredResources.sort((a, b) => b.score - a.score);
-  
-  console.log(`\n✅ Successfully scored ${allScoredResources.length}/${resources.length} resources!\n`);
-  
-  // Log top 5 scores
-  console.log('🏆 Top 5 System Design Resources:');
-  allScoredResources.slice(0, 5).forEach((r, i) => {
-    console.log(`   ${i + 1}. ${r.title} (Score: ${r.score}/10) [${r.type.toUpperCase()}]`);
-    console.log(`Category: ${r.category} | Difficulty: ${r.difficulty}`);
-    console.log(`${r.reasoning}\n`);
-  });
   
   return allScoredResources;
 }

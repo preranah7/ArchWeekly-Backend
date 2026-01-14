@@ -6,6 +6,12 @@ dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
+const CONFIG = {
+  MODEL_NAME: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  RETRY_ATTEMPTS: 3,
+  RETRY_DELAY_MS: 2000,
+} as const;
+
 export interface ScoredArticle {
   title: string;
   url: string;
@@ -19,10 +25,37 @@ export interface ScoredArticle {
   comments?: number;
 }
 
-export async function scoreArticles(articles: any[]): Promise<ScoredArticle[]> {
-  console.log('\n🤖 Analyzing articles with Gemini 2.5 Flash...\n');
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error occurred';
+}
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = CONFIG.RETRY_ATTEMPTS
+): Promise<T> {
+  let attempt = 1;
   
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  while (attempt <= maxAttempts) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      
+      const delayMs = CONFIG.RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      attempt++;
+    }
+  }
+  
+  throw new Error('Retry failed');
+}
+
+export async function scoreArticles(articles: any[]): Promise<ScoredArticle[]> {
+  const model = genAI.getGenerativeModel({ model: CONFIG.MODEL_NAME });
   
   const prompt = `You are an expert curator for "ScaleWeekly" - a newsletter focused on system design, scalability, DevOps, and site reliability engineering.
 
@@ -50,25 +83,21 @@ Return ONLY a valid JSON array (no markdown, no code blocks, no extra text):
 
 Categories must be one of: System Design, DevOps, Scalability, Cloud Architecture, Observability, Performance, Security, Database`;
 
-  try {
+  return retryWithBackoff(async () => {
     const result = await model.generateContent(prompt);
     const response = result.response.text();
     
-    // Extract JSON from response
     const jsonMatch = response.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      console.error('Response:', response);
-      throw new Error('No valid JSON found in Gemini response');
+      throw new Error('No valid JSON found in response');
     }
     
     const scores = JSON.parse(jsonMatch[0]);
     
-    // Validate scores
     if (!Array.isArray(scores) || scores.length === 0) {
       throw new Error('Invalid scores format');
     }
     
-    // Merge scores with original articles
     const scoredArticles: ScoredArticle[] = scores
       .filter((s: any) => s.index >= 0 && s.index < articles.length)
       .map((s: any) => ({
@@ -79,15 +108,8 @@ Categories must be one of: System Design, DevOps, Scalability, Cloud Architectur
         keyInsights: s.keyInsights || []
       }));
     
-    // Sort by score (highest first)
     scoredArticles.sort((a, b) => b.score - a.score);
     
-    console.log(`✅ Scored ${scoredArticles.length} articles successfully!\n`);
-    
     return scoredArticles;
-    
-  } catch (error) {
-    console.error('❌ Gemini API error:', error);
-    throw error;
-  }
+  });
 }

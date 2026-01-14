@@ -4,18 +4,32 @@ import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
 import User from '../models/User';
 
+const CONFIG = {
+  OTP_LENGTH: 6,
+  OTP_EXPIRY_MINUTES: 10,
+  JWT_EXPIRY: '7d',
+  EMAIL_FROM: process.env.EMAIL_FROM || 'ScaleWeekly <onboarding@resend.dev>',
+} as const;
+
 const getResend = () => new Resend(process.env.RESEND_API_KEY!);
 
-const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+const generateOTP = (): string => {
+  const min = Math.pow(10, CONFIG.OTP_LENGTH - 1);
+  const max = Math.pow(10, CONFIG.OTP_LENGTH) - 1;
+  return Math.floor(min + Math.random() * (max - min + 1)).toString();
 };
 
-const generateToken = (email: string, role = 'user') => {
+const generateToken = (email: string, role = 'user'): string => {
   return jwt.sign(
     { email, role },
     process.env.JWT_SECRET!,
-    { expiresIn: '7d' }
+    { expiresIn: CONFIG.JWT_EXPIRY }
   );
+};
+
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 };
 
 export const sendOTP = async (req: Request, res: Response) => {
@@ -26,9 +40,7 @@ export const sendOTP = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!validateEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
@@ -39,16 +51,9 @@ export const sendOTP = async (req: Request, res: Response) => {
 
     const otp = generateOTP();
 
-    console.log('\n' + '='.repeat(50));
-    console.log(`🔑 OTP for ${email}: ${otp}`);
-    console.log('='.repeat(50) + '\n');
-
-    // IMPORTANT: Send email FIRST, before saving to DB
-    // This way if email fails, we don't save the OTP
     try {
       const emailResponse = await getResend().emails.send({
-        // ✅ Use verified sender domain or onboarding@resend.dev
-        from: 'ScaleWeekly <onboarding@resend.dev>',
+        from: CONFIG.EMAIL_FROM,
         to: email,
         subject: 'Your ScaleWeekly Login OTP',
         html: `
@@ -63,7 +68,7 @@ export const sendOTP = async (req: Request, res: Response) => {
             </div>
             
             <p style="color: #6b7280; margin: 0 0 16px 0; font-size: 14px;">
-              ⏱️ This OTP expires in 10 minutes.
+              This OTP expires in ${CONFIG.OTP_EXPIRY_MINUTES} minutes.
             </p>
             <p style="color: #6b7280; margin: 0; font-size: 14px;">
               If you didn't request this, please ignore this email.
@@ -73,52 +78,32 @@ export const sendOTP = async (req: Request, res: Response) => {
       });
 
       if (!emailResponse.data?.id) {
-        console.error('❌ Email send failed - no ID returned:', emailResponse);
-        return res.status(500).json({ 
-          error: 'Failed to send OTP email. Please try again.' 
-        });
+        throw new Error('Email service did not return confirmation');
       }
-
-      console.log(`✅ Email sent successfully to ${email}`);
-      console.log(`📧 Email ID: ${emailResponse.data.id}\n`);
 
     } catch (emailError) {
       const err = emailError as any;
-      console.error('❌ Resend API Error:', {
-        message: err.message,
-        status: err.status,
-        data: err.data,
-      });
-      
       return res.status(500).json({ 
-        error: `Email service error: ${err.message || 'Unknown error'}. Check backend logs.`,
-        emailError: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        error: 'Failed to send OTP email. Please try again.',
       });
     }
 
-    // ✅ Save OTP to DB ONLY after email is successfully sent
     user.otp = {
       code: otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      expiresAt: new Date(Date.now() + CONFIG.OTP_EXPIRY_MINUTES * 60 * 1000),
     };
 
     await user.save();
 
-    // ✅ Return success response
     res.json({
       message: 'OTP sent successfully to your email',
       email,
-      expiresIn: '10 minutes',
-      ...(process.env.NODE_ENV === 'development' && { 
-        otp,  // Only in dev mode for testing
-        note: 'Check your email for the OTP'
-      }),
+      expiresIn: `${CONFIG.OTP_EXPIRY_MINUTES} minutes`,
     });
 
   } catch (error) {
-    console.error('❌ Unexpected error in sendOTP:', error);
     res.status(500).json({ 
-      error: (error as Error).message,
+      error: 'An error occurred while processing your request',
     });
   }
 };
@@ -167,7 +152,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred during verification' });
   }
 };
 
@@ -188,6 +173,6 @@ export const getMe = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching user data' });
   }
 };

@@ -1,17 +1,20 @@
+//src/controllers/newsletterController.ts
 import { Request, Response } from 'express';
 import Article from '../models/Article';
 import Newsletter from '../models/Newsletter';
 
-/**
- * Get latest newsletter
- * GET /api/newsletters/latest
- */
+const CONFIG = {
+  LATEST_ARTICLES_LIMIT: 12,
+  DEFAULT_PAGE_SIZE: 12,
+  TOP_ARTICLES_DEFAULT: 10,
+  CATEGORY_ARTICLES_LIMIT: 20,
+} as const;
+
 export const getLatest = async (req: Request, res: Response) => {
   try {
-    // Get top 12 RANKED articles (most recent newsletter)
     const latest = await Article.find({ rank: { $exists: true, $ne: null } })
-      .sort({ rank: 1 })  // Sort by rank 1-12
-      .limit(12);
+      .sort({ rank: 1 })
+      .limit(CONFIG.LATEST_ARTICLES_LIMIT);
 
     if (!latest || latest.length === 0) {
       return res.status(404).json({ error: 'No newsletters found' });
@@ -26,24 +29,18 @@ export const getLatest = async (req: Request, res: Response) => {
       articles: latest,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching latest newsletter' });
   }
 };
 
-
-/**
- * Get newsletter archive
- * GET /api/newsletters
- */
 export const getArchive = async (req: Request, res: Response) => {
   try {
-    const page = parseInt((req.query.page as string) || '1', 10);
-    const limit = 12;
+    const page = Math.max(1, parseInt((req.query.page as string) || '1', 10));
+    const limit = CONFIG.DEFAULT_PAGE_SIZE;
     const skip = (page - 1) * limit;
 
-    // Get all articles, sorted by most recent first
     const articles = await Article.find()
-      .sort({ scrapedAt: -1, score: -1 })  // Sort by date, then score
+      .sort({ scrapedAt: -1, score: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -59,15 +56,10 @@ export const getArchive = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching newsletter archive' });
   }
 };
 
-
-/**
- * Get newsletter by ID
- * GET /api/newsletters/:id
- */
 export const getById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -90,21 +82,17 @@ export const getById = async (req: Request, res: Response) => {
       articles: newsletter.articles,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching newsletter' });
   }
 };
 
-/**
- * Get articles by category
- * GET /api/newsletters/category/:category
- */
 export const getByCategory = async (req: Request, res: Response) => {
   try {
     const { category } = req.params;
 
     const articles = await Article.find({ category })
       .sort({ score: -1 })
-      .limit(20);
+      .limit(CONFIG.CATEGORY_ARTICLES_LIMIT);
 
     res.json({ 
       category,
@@ -112,17 +100,16 @@ export const getByCategory = async (req: Request, res: Response) => {
       articles 
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching articles by category' });
   }
 };
 
-/**
- * Get top ranked articles
- * GET /api/newsletters/top
- */
 export const getTopRanked = async (req: Request, res: Response) => {
   try {
-    const limit = parseInt((req.query.limit as string) || '10', 10);
+    const limit = Math.min(
+      50,
+      Math.max(1, parseInt((req.query.limit as string) || String(CONFIG.TOP_ARTICLES_DEFAULT), 10))
+    );
 
     const articles = await Article.find()
       .sort({ score: -1, scrapedAt: -1 })
@@ -133,6 +120,6 @@ export const getTopRanked = async (req: Request, res: Response) => {
       articles 
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching top ranked articles' });
   }
 };

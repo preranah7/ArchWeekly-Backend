@@ -2,79 +2,84 @@
 import { Request, Response } from 'express';
 import SystemDesignResource from '../models/SystemDesignResource';
 
-/**
- * Get all System Design resources
- * GET /api/system-design
- * Query params: category, difficulty, limit
- */
+const CONFIG = {
+  DEFAULT_LIMIT: 50,
+  MAX_LIMIT: 100,
+  FEATURED_LIMIT: 10,
+  CATEGORY_DEFAULT_LIMIT: 20,
+  SEARCH_DEFAULT_LIMIT: 20,
+} as const;
+
+const VALID_CATEGORIES = [
+  'Fundamentals',
+  'Intermediate',
+  'Advanced',
+  'Case Studies',
+  'Interview Problems'
+] as const;
+
+const VALID_DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'] as const;
+
+const parseLimit = (limit: string | undefined, defaultLimit: number, maxLimit: number = CONFIG.MAX_LIMIT): number => {
+  const parsed = parseInt(limit || String(defaultLimit), 10);
+  return Math.min(Math.max(1, parsed), maxLimit);
+};
+
 export const getAllResources = async (req: Request, res: Response) => {
   try {
-    const { category, difficulty, limit = '50' } = req.query;
+    const { category, difficulty, limit } = req.query;
     
-    // Build query
     const query: any = {};
     if (category) query.category = category;
     if (difficulty) query.difficulty = difficulty;
     
+    const limitValue = parseLimit(limit as string, CONFIG.DEFAULT_LIMIT);
+    
     const resources = await SystemDesignResource.find(query)
-      .sort({ score: -1, rank: 1 }) // Sort by score, then rank
-      .limit(parseInt(limit as string));
+      .sort({ score: -1, rank: 1 })
+      .limit(limitValue);
     
     res.json({
       count: resources.length,
       resources,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching resources' });
   }
 };
 
-/**
- * Get top featured resources (top 10 by score)
- * GET /api/system-design/featured
- */
 export const getFeaturedResources = async (req: Request, res: Response) => {
   try {
     const featured = await SystemDesignResource.find()
       .sort({ score: -1 })
-      .limit(10);
+      .limit(CONFIG.FEATURED_LIMIT);
     
     res.json({
       count: featured.length,
       resources: featured,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching featured resources' });
   }
 };
 
-/**
- * Get resources by category
- * GET /api/system-design/category/:category
- */
 export const getByCategory = async (req: Request, res: Response) => {
   try {
     const { category } = req.params;
-    const { limit = '20' } = req.query;
+    const { limit } = req.query;
     
-    const validCategories = [
-      'Fundamentals',
-      'Intermediate',
-      'Advanced',
-      'Case Studies',
-      'Interview Problems'
-    ];
-    
-    if (!validCategories.includes(category)) {
+    if (!VALID_CATEGORIES.includes(category as any)) {
       return res.status(400).json({ 
         error: 'Invalid category',
-        validCategories 
+        validCategories: VALID_CATEGORIES
       });
     }
     
+    const limitValue = parseLimit(limit as string, CONFIG.CATEGORY_DEFAULT_LIMIT);
+    
     const resources = await SystemDesignResource.find({ category })
       .sort({ score: -1 })
-      .limit(parseInt(limit as string));
+      .limit(limitValue);
     
     res.json({
       category,
@@ -82,31 +87,27 @@ export const getByCategory = async (req: Request, res: Response) => {
       resources,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching resources by category' });
   }
 };
 
-/**
- * Get resources by difficulty
- * GET /api/system-design/difficulty/:difficulty
- */
 export const getByDifficulty = async (req: Request, res: Response) => {
   try {
     const { difficulty } = req.params;
-    const { limit = '20' } = req.query;
+    const { limit } = req.query;
     
-    const validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
-    
-    if (!validDifficulties.includes(difficulty)) {
+    if (!VALID_DIFFICULTIES.includes(difficulty as any)) {
       return res.status(400).json({ 
         error: 'Invalid difficulty',
-        validDifficulties 
+        validDifficulties: VALID_DIFFICULTIES
       });
     }
     
+    const limitValue = parseLimit(limit as string, CONFIG.CATEGORY_DEFAULT_LIMIT);
+    
     const resources = await SystemDesignResource.find({ difficulty })
       .sort({ score: -1 })
-      .limit(parseInt(limit as string));
+      .limit(limitValue);
     
     res.json({
       difficulty,
@@ -114,14 +115,10 @@ export const getByDifficulty = async (req: Request, res: Response) => {
       resources,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching resources by difficulty' });
   }
 };
 
-/**
- * Get single resource by ID
- * GET /api/system-design/:id
- */
 export const getResourceById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -134,14 +131,10 @@ export const getResourceById = async (req: Request, res: Response) => {
     
     res.json({ resource });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching resource' });
   }
 };
 
-/**
- * Get resource statistics
- * GET /api/system-design/stats
- */
 export const getStats = async (req: Request, res: Response) => {
   try {
     const [
@@ -178,21 +171,19 @@ export const getStats = async (req: Request, res: Response) => {
       }, {} as Record<string, number>),
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching statistics' });
   }
 };
 
-/**
- * Search resources by topic or title
- * GET /api/system-design/search?q=caching
- */
 export const searchResources = async (req: Request, res: Response) => {
   try {
-    const { q, limit = '20' } = req.query;
+    const { q, limit } = req.query;
     
     if (!q || typeof q !== 'string') {
       return res.status(400).json({ error: 'Query parameter "q" is required' });
     }
+    
+    const limitValue = parseLimit(limit as string, CONFIG.SEARCH_DEFAULT_LIMIT);
     
     const resources = await SystemDesignResource.find({
       $or: [
@@ -202,7 +193,7 @@ export const searchResources = async (req: Request, res: Response) => {
       ]
     })
       .sort({ score: -1 })
-      .limit(parseInt(limit as string));
+      .limit(limitValue);
     
     res.json({
       query: q,
@@ -210,6 +201,6 @@ export const searchResources = async (req: Request, res: Response) => {
       resources,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while searching resources' });
   }
 };

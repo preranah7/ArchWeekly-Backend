@@ -1,19 +1,25 @@
+//src/controllers/subscriberController.ts
 import { Request, Response } from 'express';
 import Subscriber from '../models/Subscriber';
 import User from '../models/User';
 
-const generateReferralCode = (email: string) => {
-  return (
-    email.split('@')[0].toUpperCase() +
-    '_' +
-    Math.random().toString(36).substring(2, 8).toUpperCase()
-  );
+const CONFIG = {
+  DEFAULT_PAGE_SIZE: 50,
+  MAX_PAGE_SIZE: 100,
+  REFERRAL_CODE_LENGTH: 6,
+} as const;
+
+const generateReferralCode = (email: string): string => {
+  const prefix = email.split('@')[0].toUpperCase();
+  const suffix = Math.random().toString(36).substring(2, 2 + CONFIG.REFERRAL_CODE_LENGTH).toUpperCase();
+  return `${prefix}_${suffix}`;
 };
 
-/**
- * Subscribe a new user (Public - Homepage)
- * POST /api/subscribers/subscribe
- */
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 export const subscribe = async (req: Request, res: Response) => {
   try {
     const { email, referredBy } = req.body;
@@ -22,9 +28,7 @@ export const subscribe = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!validateEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
@@ -35,13 +39,11 @@ export const subscribe = async (req: Request, res: Response) => {
 
     let subscriber;
     if (existing) {
-      // Reactivate existing subscriber
       subscriber = existing;
       subscriber.isActive = true;
       subscriber.unsubscribedAt = null;
       subscriber.referredBy = referredBy || existing.referredBy;
     } else {
-      // Create new subscriber
       subscriber = new Subscriber({
         email,
         referralCode: generateReferralCode(email),
@@ -63,14 +65,10 @@ export const subscribe = async (req: Request, res: Response) => {
     if (error.code === 11000) {
       return res.status(400).json({ error: 'Email already subscribed' });
     }
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'An error occurred during subscription' });
   }
 };
 
-/**
- * Unsubscribe a user (Public)
- * DELETE /api/subscribers/unsubscribe/:email
- */
 export const unsubscribe = async (req: Request, res: Response) => {
   try {
     const { email } = req.params;
@@ -101,19 +99,17 @@ export const unsubscribe = async (req: Request, res: Response) => {
       email: subscriber.email,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred during unsubscription' });
   }
 };
 
-/**
- * Get all subscribers (Admin only - Use with adminOnly middleware)
- * GET /api/subscribers
- */
 export const getAllSubscribers = async (req: Request, res: Response) => {
   try {
-    // No need to check admin here - adminOnly middleware does it
-    const page = parseInt((req.query.page as string) || '1', 10);
-    const limit = parseInt((req.query.limit as string) || '50', 10);
+    const page = Math.max(1, parseInt((req.query.page as string) || '1', 10));
+    const limit = Math.min(
+      CONFIG.MAX_PAGE_SIZE,
+      parseInt((req.query.limit as string) || String(CONFIG.DEFAULT_PAGE_SIZE), 10)
+    );
     const skip = (page - 1) * limit;
 
     const subscribers = await Subscriber.find()
@@ -141,14 +137,10 @@ export const getAllSubscribers = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching subscribers' });
   }
 };
 
-/**
- * Get subscriber statistics (Public)
- * GET /api/subscribers/stats
- */
 export const getStats = async (req: Request, res: Response) => {
   try {
     const total = await Subscriber.countDocuments();
@@ -161,14 +153,10 @@ export const getStats = async (req: Request, res: Response) => {
       inactive,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching statistics' });
   }
 };
 
-/**
- * Get combined subscriber count (Subscribers + Verified Users)
- * GET /api/subscribers/count
- */
 export const getSubscriberCount = async (req: Request, res: Response) => {
   try {
     const activeSubscribers = await Subscriber.countDocuments({ isActive: true });
@@ -181,7 +169,7 @@ export const getSubscriberCount = async (req: Request, res: Response) => {
       totalSubscribers,
       verifiedUsers,
       inactiveSubscribers,
-      totalUnique: activeSubscribers + verifiedUsers, // Total people receiving newsletters
+      totalUnique: activeSubscribers + verifiedUsers,
       breakdown: {
         subscribersOnly: activeSubscribers,
         verifiedUsersOnly: verifiedUsers,
@@ -189,14 +177,10 @@ export const getSubscriberCount = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching counts' });
   }
 };
 
-/**
- * Get referral stats for a user (Public)
- * GET /api/subscribers/referrals/:email
- */
 export const getReferralStats = async (req: Request, res: Response) => {
   try {
     const { email } = req.params;
@@ -220,6 +204,6 @@ export const getReferralStats = async (req: Request, res: Response) => {
       referrals: referredSubscribers,
     });
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.status(500).json({ error: 'An error occurred while fetching referral stats' });
   }
 };

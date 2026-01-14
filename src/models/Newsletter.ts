@@ -16,9 +16,9 @@ export interface INewsletter extends Document {
   title: string;
   date: Date;
   articles: INewsletterArticle[];
-  sentTo?: number; // Track how many subscribers received it
-  sentAt?: Date;   // When was it sent
-  status: 'draft' | 'sent'; // Newsletter status
+  sentTo?: number; 
+  sentAt?: Date;   
+  status: 'draft' | 'sent';
   createdAt: Date;
   updatedAt: Date;
 }

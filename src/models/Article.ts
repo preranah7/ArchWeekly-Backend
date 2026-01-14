@@ -13,8 +13,8 @@ export interface IArticle extends Document {
   comments?: number;
   rank?: number;
   scrapedAt: Date;
-  createdAt: Date;      // ← ADD THIS
-  updatedAt: Date;      // ← ADD THIS
+  createdAt: Date;      
+  updatedAt: Date;      
 }
 
 const articleSchema = new mongoose.Schema<IArticle>(
@@ -32,7 +32,7 @@ const articleSchema = new mongoose.Schema<IArticle>(
     rank: Number,
     scrapedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }  // This adds createdAt and updatedAt automatically
+  { timestamps: true }  
 );
 
 // Index for faster queries

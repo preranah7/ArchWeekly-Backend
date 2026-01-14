@@ -1,30 +1,13 @@
+//src/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-/**
- * Global error handler middleware
- * Must be registered LAST in middleware chain
- */
 export const errorHandler = (
   err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // Log error in development
-  if (process.env.NODE_ENV === 'development') {
-    console.error('❌ Error caught by errorHandler:', {
-      name: err.name,
-      message: err.message,
-      stack: err.stack,
-      path: req.path,
-      method: req.method,
-    });
-  } else {
-    console.error('❌ Error:', err.message);
-  }
-
-  // Default error values
   let status = err.status || err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
   let details: any = undefined;
@@ -44,7 +27,7 @@ export const errorHandler = (
     });
   }
 
-  // Mongoose Duplicate Key Error (11000)
+  // Mongoose Duplicate Key Error
   if (err.code === 11000) {
     status = 400;
     const field = Object.keys(err.keyPattern || {})[0];
@@ -56,10 +39,10 @@ export const errorHandler = (
     });
   }
 
-  // Mongoose CastError (invalid ObjectId)
+  // Mongoose CastError
   if (err.name === 'CastError') {
     status = 400;
-    message = `Invalid ${err.path}: ${err.value}`;
+    message = `Invalid ${err.path}`;
     
     return res.status(status).json({
       error: message,
@@ -69,49 +52,33 @@ export const errorHandler = (
   // JWT Errors
   if (err instanceof jwt.TokenExpiredError) {
     status = 401;
-    message = 'Token expired. Please login again.';
+    message = 'Token expired';
     
     return res.status(status).json({
-      error: 'Token expired',
-      message,
+      error: message,
     });
   }
 
   if (err instanceof jwt.JsonWebTokenError) {
     status = 401;
-    message = 'Invalid token. Please login again.';
+    message = 'Invalid token';
     
     return res.status(status).json({
-      error: 'Invalid token',
-      message,
+      error: message,
     });
   }
 
-  // Rate Limit Error (if using express-rate-limit)
+  // Rate Limit Error
   if (err.name === 'TooManyRequests') {
     status = 429;
     message = 'Too many requests. Please try again later.';
   }
 
-  // Generic error response
-  const errorResponse: any = {
+  res.status(status).json({
     error: message,
-  };
-
-  // Include stack trace in development only
-  if (process.env.NODE_ENV === 'development') {
-    errorResponse.stack = err.stack;
-    errorResponse.path = req.path;
-    errorResponse.method = req.method;
-  }
-
-  res.status(status).json(errorResponse);
+  });
 };
 
-/**
- * 404 Not Found handler
- * Should be registered BEFORE errorHandler
- */
 export const notFoundHandler = (
   req: Request,
   res: Response,
@@ -123,11 +90,6 @@ export const notFoundHandler = (
   });
 };
 
-/**
- * Async error wrapper
- * Wraps async route handlers to catch errors automatically
- * Usage: router.get('/path', asyncHandler(async (req, res) => { ... }))
- */
 export const asyncHandler = (
   fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) => {

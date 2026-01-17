@@ -12,8 +12,8 @@ dist/
 build/
 
 # Generated files
-# archweekly-curated.json
-# system-design-resources.json
+archweekly-curated.json
+system-design-resources.json
 
 # Logs
 logs/

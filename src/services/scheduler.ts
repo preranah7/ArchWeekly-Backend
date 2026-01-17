@@ -1,3 +1,4 @@
+//src/services/scheduler.ts
 import cron from 'node-cron';
 import { sendNewsletterToAll } from './newsletter-sender';
 import { runAllScrapers } from '../scrapers';
@@ -6,24 +7,18 @@ import Article from '../models/Article';
 import * as fs from 'fs';
 import * as path from 'path';
 
-/**
- * Run complete newsletter workflow:
- * 1. Scrape articles
- * 2. Score with Gemini
- * 3. Save to MongoDB
- * 4. Generate JSON file
- * 5. Send to subscribers
- */
+const CONFIG = {
+  TOP_ARTICLES_FEATURED: 12,
+  NEWSLETTER_JSON: 'archweekly-curated.json',
+  CRON_WEEKLY: '0 9 * * 0',
+  TIMEZONE: 'Asia/Kolkata',
+} as const;
+
 async function runNewsletterWorkflow() {
   try {
-    // Step 1: Scrape articles
-    console.log('📰 Step 1: Running scrapers...\n');
     const rawArticles = await runAllScrapers();
-    console.log(`✅ Scraped ${rawArticles.length} articles\n`);
 
     if (rawArticles.length === 0) {
-      console.log('⚠️ No articles found. Aborting newsletter send.\n');
-      // Return empty result instead of undefined
       return {
         total: 0,
         sent: 0,
@@ -33,68 +28,55 @@ async function runNewsletterWorkflow() {
       };
     }
 
-    // Step 2: Score articles with Gemini
-    console.log('🤖 Step 2: Scoring articles with AI...\n');
     const scoredArticles = await scoreArticles(rawArticles);
-    console.log(`✅ Scored ${scoredArticles.length} articles\n`);
 
-// Step 3: Save to MongoDB (update or insert)
-console.log('💾 Step 3: Saving to MongoDB...\n');
+    await Article.updateMany({}, { $unset: { rank: "" } });
 
-// Clear old ranks first (so only latest articles have ranks)
-await Article.updateMany({}, { $unset: { rank: "" } });
+    const top12Articles = scoredArticles.slice(0, CONFIG.TOP_ARTICLES_FEATURED);
+    for (let i = 0; i < top12Articles.length; i++) {
+      const article = top12Articles[i];
+      await Article.findOneAndUpdate(
+        { url: article.url },
+        {
+          title: article.title,
+          url: article.url,
+          source: article.source,
+          description: article.description,
+          score: article.score,
+          category: article.category,
+          reasoning: article.reasoning,
+          keyInsights: article.keyInsights,
+          upvotes: article.upvotes,
+          comments: article.comments,
+          rank: i + 1,
+          scrapedAt: new Date(),
+        },
+        { upsert: true, new: true }
+      );
+    }
 
-// Save top 12 with ranks
-const top12Articles = scoredArticles.slice(0, 12);
-for (let i = 0; i < top12Articles.length; i++) {
-  const article = top12Articles[i];
-  await Article.findOneAndUpdate(
-    { url: article.url },
-    {
-      title: article.title,
-      url: article.url,
-      source: article.source,
-      description: article.description,
-      score: article.score,
-      category: article.category,
-      reasoning: article.reasoning,
-      keyInsights: article.keyInsights,
-      upvotes: article.upvotes,
-      comments: article.comments,
-      rank: i + 1,  // Rank 1-12
-      scrapedAt: new Date(),
-    },
-    { upsert: true, new: true }
-  );
-}
+    const remainingArticles = scoredArticles.slice(CONFIG.TOP_ARTICLES_FEATURED);
+    for (const article of remainingArticles) {
+      await Article.findOneAndUpdate(
+        { url: article.url },
+        {
+          title: article.title,
+          url: article.url,
+          source: article.source,
+          description: article.description,
+          score: article.score,
+          category: article.category,
+          reasoning: article.reasoning,
+          keyInsights: article.keyInsights,
+          upvotes: article.upvotes,
+          comments: article.comments,
+          scrapedAt: new Date(),
+        },
+        { upsert: true, new: true }
+      );
+    }
 
-// Save remaining articles without ranks (for archive)
-const remainingArticles = scoredArticles.slice(12);
-for (const article of remainingArticles) {
-  await Article.findOneAndUpdate(
-    { url: article.url },
-    {
-      title: article.title,
-      url: article.url,
-      source: article.source,
-      description: article.description,
-      score: article.score,
-      category: article.category,
-      reasoning: article.reasoning,
-      keyInsights: article.keyInsights,
-      upvotes: article.upvotes,
-      comments: article.comments,
-      scrapedAt: new Date(),
-    },
-    { upsert: true, new: true }
-  );
-}
-console.log(`✅ Saved to MongoDB\n`);
-
-
-    // Step 4: Generate JSON file for email sending
-    console.log('📄 Step 4: Generating newsletter JSON...\n');
-    const topArticles = scoredArticles.slice(0, 12).map((article, index) => ({
+    const topArticles = scoredArticles.slice(0, CONFIG.TOP_ARTICLES_FEATURED).map((article, index) => ({
       rank: index + 1,
       title: article.title,
       url: article.url,
@@ -122,66 +104,31 @@ console.log(`✅ Saved to MongoDB\n`);
       topArticles,
     };
 
-    const jsonPath = path.join(process.cwd(), 'scaleweekly-curated.json');
+    const jsonPath = path.join(process.cwd(), CONFIG.NEWSLETTER_JSON);
     fs.writeFileSync(jsonPath, JSON.stringify(newsletterData, null, 2));
-    console.log(`✅ JSON saved: ${jsonPath}\n`);
 
-    // Step 5: Send newsletters
-    console.log('📧 Step 5: Sending newsletters...\n');
     const result = await sendNewsletterToAll();
-    
-    console.log('\n✅ Newsletter workflow complete!');
-    console.log(`📊 Sent to ${result.sent}/${result.total} subscribers`);
-    console.log(`💾 Newsletter ID: ${result.newsletterId}\n`);
 
     return result;
-
   } catch (error) {
-    console.error('\n❌ Newsletter workflow failed:', error);
     throw error;
   }
 }
 
-/**
- * Schedule weekly newsletter
- * Runs every Sunday at 9:00 AM IST
- */
 export function scheduleWeeklyNewsletter() {
-  // Cron format: minute hour day month weekday
-  // '0 9 * * 0' = Every Sunday at 9:00 AM
-  
-  cron.schedule('0 9 * * 0', async () => {
-    console.log('\n' + '='.repeat(60));
-    console.log('⏰ WEEKLY AUTOMATION TRIGGERED');
-    console.log(`📅 ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
-    console.log('='.repeat(60) + '\n');
-
+  cron.schedule(CONFIG.CRON_WEEKLY, async () => {
     await runNewsletterWorkflow();
-
   }, {
-    timezone: 'Asia/Kolkata'
+    timezone: CONFIG.TIMEZONE
   });
-
-  console.log('✅ Weekly newsletter scheduled: Every Sunday at 9:00 AM IST');
 }
 
-/**
- * For testing: Schedule newsletter to run every 5 minutes
- * Uncomment this during development to test automation
- */
 export function scheduleTestNewsletter() {
   cron.schedule('*/5 * * * *', async () => {
-    console.log('\n🧪 TEST: Running newsletter automation...\n');
     await runNewsletterWorkflow();
   });
-
-  console.log('🧪 TEST: Newsletter scheduled every 5 minutes');
 }
 
-/**
- * Manual trigger for testing (call this from API endpoint)
- */
 export async function triggerNewsletterManually() {
-  console.log('\n🔧 MANUAL TRIGGER: Starting newsletter workflow...\n');
   return await runNewsletterWorkflow();
 }

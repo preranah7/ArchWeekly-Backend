@@ -22,7 +22,7 @@ export const getLatest = async (req: Request, res: Response) => {
 
     res.json({
       newsletter: {
-        title: 'Latest ScaleWeekly Edition',
+        title: 'Latest ArchWeekly Edition',
         date: latest[0].scrapedAt,
         totalArticles: latest.length,
       },

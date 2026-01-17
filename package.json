@@ -1,20 +1,33 @@
 {
-  "name": "techpulse-backend",
+  "name": "archweekly-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "description": "AI-powered newsletter platform for DevOps & System Design",
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
-    "dev": "nodemon --ignore scaleweekly-curated.json --ignore '*.json' --exec ts-node src/server.ts",
-    "scraper": "ts-node src/scraper.ts",
+    "dev": "nodemon --ignore archweekly-curated.json --ignore system-design-resources.json --ignore '*.json' --exec ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "both": "concurrently \"npm run dev\" \"cd ../scaleweekly-frontend && npm run dev\"",
+    "scraper": "ts-node src/scraper.ts",
     "scrape:system-design": "ts-node src/system-design-scraper.ts",
-    "test": "echo \"No tests yet\" && exit 0"
+    "both": "concurrently \"npm run dev\" \"cd ../scaleweekly-frontend && npm run dev\"",
+    "test": "echo \"No tests yet\" && exit 0",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"Linting not configured\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "newsletter",
+    "devops",
+    "system-design",
+    "scalability",
+    "ai",
+    "backend"
+  ],
+  "author": "Prerana Hippargi",
+  "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@googleapis/youtube": "^30.1.0",
@@ -24,7 +37,6 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "googleapis": "^169.0.0",
-    "https": "^1.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.0.0",
     "mongoose": "^9.1.1",
@@ -32,12 +44,11 @@
     "resend": "^6.6.0"
   },
   "devDependencies": {
-    "@types/axios": "^0.9.36",
-    "@types/cheerio": "^0.22.35",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.3",
+    "@types/node-cron": "^3.0.11",
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",

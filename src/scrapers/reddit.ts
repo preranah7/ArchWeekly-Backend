@@ -1,3 +1,4 @@
+//src/scrapers/reddit.ts
 import axios from 'axios';
 
 interface RedditPost {
@@ -11,7 +12,6 @@ interface RedditPost {
   author: string;
 }
 
-// Type for Reddit API response
 interface RedditResponse {
   data: {
     children: Array<{
@@ -28,7 +28,13 @@ interface RedditResponse {
   }
 }
 
-// Keywords for filtering ScaleWeekly content
+const CONFIG = {
+  API_URL: 'https://www.reddit.com/r/devops/hot.json',
+  POST_LIMIT: 50,
+  MAX_DESCRIPTION_LENGTH: 300,
+  REQUEST_TIMEOUT: 10000,
+} as const;
+
 const SCALE_KEYWORDS = [
   'kubernetes', 'docker', 'redis', 'kafka', 'microservices',
   'scaling', 'infrastructure', 'devops', 'ci/cd', 'monitoring',
@@ -43,49 +49,38 @@ function isRelevant(title: string, selftext: string): boolean {
 
 async function scrapeReddit(): Promise<RedditPost[]> {
   try {
-    console.log('📡 Fetching Reddit r/devops...');
-    
-    // Reddit JSON API (no auth needed for reading)
-    // Get hot posts from r/devops
-    const response = await axios.get<RedditResponse>('https://www.reddit.com/r/devops/hot.json', {
+    const response = await axios.get<RedditResponse>(CONFIG.API_URL, {
       params: {
-        limit: 50
+        limit: CONFIG.POST_LIMIT
       },
       headers: {
-        'User-Agent': 'ScaleWeekly-Scraper/1.0'
-      }
+        'User-Agent': 'ArchWeekly-Scraper/1.0'
+      },
+      timeout: CONFIG.REQUEST_TIMEOUT,
     });
     
     const posts = response.data.data.children;
-    console.log(`✅ Downloaded ${posts.length} posts from r/devops`);
-    
     const relevantPosts: RedditPost[] = [];
     
     for (const post of posts) {
       const data = post.data;
       
-      // Filter for ScaleWeekly relevance
       if (isRelevant(data.title, data.selftext || '')) {
         relevantPosts.push({
           title: data.title,
           url: data.url.startsWith('http') ? data.url : `https://reddit.com${data.permalink}`,
-          description: data.selftext?.substring(0, 300) || 'Discussion on r/devops',
+          description: data.selftext?.substring(0, CONFIG.MAX_DESCRIPTION_LENGTH) || 'Discussion on r/devops',
           source: 'reddit',
           scraped_at: new Date().toISOString(),
           upvotes: data.ups,
           comments: data.num_comments,
           author: data.author
         });
-        
-        console.log(`✅ Relevant: ${data.title} (${data.ups} upvotes)`);
       }
     }
     
-    console.log(`\n✅ Found ${relevantPosts.length} ScaleWeekly-relevant posts\n`);
     return relevantPosts;
-    
   } catch (error: any) {
-    console.error('❌ Error scraping Reddit:', error.message);
     return [];
   }
 }

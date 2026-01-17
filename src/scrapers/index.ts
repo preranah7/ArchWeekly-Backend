@@ -1,3 +1,4 @@
+//src/scrapers/index.ts
 import { scrapeHackerNews, Story } from './hackernews';
 import { scrapeReddit, RedditPost } from './reddit';
 import { scrapeEngineeringBlogs, BlogPost } from './engineering-blogs';
@@ -13,20 +14,19 @@ interface UnifiedArticle {
   comments?: number;
 }
 
+const CONFIG = {
+  REDDIT_MIN_UPVOTES: 100,
+} as const;
+
 async function runAllScrapers(): Promise<UnifiedArticle[]> {
-  console.log('🚀 Starting ScaleWeekly scrapers...\n');
-  console.log('📊 Scraping HIGH-QUALITY sources...\n');
-  
   try {
-    // Scrape all sources in parallel
     const [engBlogs, hnStories, redditPosts] = await Promise.all([
-      scrapeEngineeringBlogs(),  // High Scalability, Pragmatic Engineer, Cloudflare, AWS
-      scrapeHackerNews(),         // Community signal
-      scrapeReddit()              // High-upvote DevOps posts
+      scrapeEngineeringBlogs(),
+      scrapeHackerNews(),
+      scrapeReddit()
     ]);
     
     const allArticles: UnifiedArticle[] = [
-      // Engineering blogs (PRIORITY - your main source)
       ...engBlogs.map(post => ({
         title: post.title,
         url: post.url,
@@ -35,18 +35,16 @@ async function runAllScrapers(): Promise<UnifiedArticle[]> {
         scraped_at: post.scraped_at
       })),
       
-      // HackerNews (filtered for relevance)
       ...hnStories.map(story => ({
         title: story.title,
         url: story.url,
-        description: story.title, // HN doesn't have descriptions
+        description: story.title,
         source: story.source,
         scraped_at: story.scraped_at
       })),
       
-      // Reddit (only high-quality discussions 100+ upvotes)
       ...redditPosts
-        .filter(post => post.upvotes > 100)
+        .filter(post => post.upvotes > CONFIG.REDDIT_MIN_UPVOTES)
         .map(post => ({
           title: post.title,
           url: post.url,
@@ -58,15 +56,8 @@ async function runAllScrapers(): Promise<UnifiedArticle[]> {
         }))
     ];
     
-    console.log(`\n✅ TOTAL ARTICLES FOUND: ${allArticles.length}`);
-    console.log(`   📰 Engineering Blogs: ${engBlogs.length}`);
-    console.log(`   🔥 HackerNews: ${hnStories.length}`);
-    console.log(`   💬 Reddit (100+ upvotes): ${redditPosts.filter(p => p.upvotes > 100).length}\n`);
-    
     return allArticles;
-    
   } catch (error) {
-    console.error('❌ Error in scrapers:', error);
     throw error;
   }
 }

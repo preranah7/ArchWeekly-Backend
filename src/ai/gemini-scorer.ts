@@ -57,7 +57,7 @@ async function retryWithBackoff<T>(
 export async function scoreArticles(articles: any[]): Promise<ScoredArticle[]> {
   const model = genAI.getGenerativeModel({ model: CONFIG.MODEL_NAME });
   
-  const prompt = `You are an expert curator for "ScaleWeekly" - a newsletter focused on system design, scalability, DevOps, and site reliability engineering.
+  const prompt = `You are an expert curator for "ArchWeekly" - a newsletter focused on system design, scalability, DevOps, and site reliability engineering.
 
 Analyze these ${articles.length} articles and score each from 1-10 based on:
 - Relevance to system design/scalability/DevOps (40%)

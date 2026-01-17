@@ -1,6 +1,6 @@
+//src/scrapers/engineering-blogs.ts
 import axios from 'axios';
 import { load } from 'cheerio';
-import https from 'https';
 
 interface BlogPost {
   title: string;
@@ -11,7 +11,11 @@ interface BlogPost {
   published_date?: string;
 }
 
-// High-quality engineering blog RSS feeds
+const CONFIG = {
+  REQUEST_TIMEOUT: 10000,
+  MAX_POSTS_PER_FEED: 5,
+  MAX_DESCRIPTION_LENGTH: 300,
+} as const;
 
 const RSS_FEEDS = [
   {
@@ -36,34 +40,25 @@ const RSS_FEEDS = [
   }
 ];
 
-
-
 async function parseRSS(feedUrl: string, sourceName: string): Promise<BlogPost[]> {
   try {
-    // Create HTTPS agent that ignores SSL errors (for development)
-    const httpsAgent = new https.Agent({
-      rejectUnauthorized: false
-    });
-    
     const response = await axios.get(feedUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
-      timeout: 10000,
-      httpsAgent
-    } as any); // Use 'as any' to bypass TypeScript strictness
+      timeout: CONFIG.REQUEST_TIMEOUT,
+    });
     
     const xmlData = String(response.data);
     const $ = load(xmlData, { xmlMode: true });
     const posts: BlogPost[] = [];
     
-    // Parse RSS items (limit to 5 latest)
-    $('item').slice(0, 5).each((index, element) => {
+    $('item').slice(0, CONFIG.MAX_POSTS_PER_FEED).each((index, element) => {
       const title = $(element).find('title').text().trim();
       const url = $(element).find('link').text().trim();
       const description = $(element).find('description').text().trim()
-        .replace(/<[^>]*>/g, '') // Remove HTML tags
-        .substring(0, 300);
+        .replace(/<[^>]*>/g, '')
+        .substring(0, CONFIG.MAX_DESCRIPTION_LENGTH);
       const pubDate = $(element).find('pubDate').text().trim();
       
       if (title && url) {
@@ -79,32 +74,20 @@ async function parseRSS(feedUrl: string, sourceName: string): Promise<BlogPost[]
     });
     
     return posts;
-    
   } catch (error: any) {
-    console.error(`❌ Error fetching ${feedUrl}:`, error.message);
     return [];
   }
 }
 
 async function scrapeEngineeringBlogs(): Promise<BlogPost[]> {
-  console.log('📰 Fetching engineering blog RSS feeds...\n');
-  
   const results = await Promise.allSettled(
-    RSS_FEEDS.map(feed => {
-      console.log(`📡 Fetching ${feed.name}...`);
-      return parseRSS(feed.url, feed.source);
-    })
+    RSS_FEEDS.map(feed => parseRSS(feed.url, feed.source))
   );
   
   const allPosts = results
     .filter(result => result.status === 'fulfilled')
     .flatMap(result => (result as PromiseFulfilledResult<BlogPost[]>).value);
   
-  allPosts.forEach(post => {
-    console.log(`✅ ${post.source}: ${post.title}`);
-  });
-  
-  console.log(`\n✅ Found ${allPosts.length} engineering blog posts\n`);
   return allPosts;
 }
 

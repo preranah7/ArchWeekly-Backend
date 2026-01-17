@@ -43,7 +43,7 @@ app.get('/api/health', (req, res) => {
 
 app.get('/', (req, res) => {
   res.json({
-    name: 'ScaleWeekly Backend API',
+    name: 'ArchWeekly Backend API',
     version: '1.0.0',
     endpoints: {
       health: '/api/health',

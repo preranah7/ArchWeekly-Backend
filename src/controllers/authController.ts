@@ -8,7 +8,7 @@ const CONFIG = {
   OTP_LENGTH: 6,
   OTP_EXPIRY_MINUTES: 10,
   JWT_EXPIRY: '7d',
-  EMAIL_FROM: process.env.EMAIL_FROM || 'ScaleWeekly <onboarding@resend.dev>',
+  EMAIL_FROM: process.env.EMAIL_FROM || 'ArchWeekly <newsletter@archweekly.online>',
 } as const;
 
 const getResend = () => new Resend(process.env.RESEND_API_KEY!);
@@ -55,14 +55,14 @@ export const sendOTP = async (req: Request, res: Response) => {
       const emailResponse = await getResend().emails.send({
         from: CONFIG.EMAIL_FROM,
         to: email,
-        subject: 'Your ScaleWeekly Login OTP',
+        subject: 'Your ArchWeekly Login OTP',
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #1f2937; margin: 0 0 16px 0;">Welcome to ScaleWeekly</h2>
+            <h2 style="color: #1f2937; margin: 0 0 16px 0;">Welcome to ArchWeekly</h2>
             <p style="color: #6b7280; margin: 0 0 24px 0;">Your one-time password is:</p>
             
             <div style="background: #f3f4f6; padding: 24px; border-radius: 8px; text-align: center; margin-bottom: 24px;">
-              <h1 style="color: #0ea5e9; font-family: 'Courier New', monospace; font-size: 36px; letter-spacing: 6px; margin: 0;">
+              <h1 style="color: #EA580C; font-family: 'Courier New', monospace; font-size: 36px; letter-spacing: 6px; margin: 0;">
                 ${otp}
               </h1>
             </div>

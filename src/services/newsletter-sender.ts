@@ -1,3 +1,4 @@
+//src/services/newsletter-sender.ts
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -9,6 +10,14 @@ import Subscriber from '../models/Subscriber';
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const CONFIG = {
+  EMAIL_FROM: process.env.EMAIL_FROM || 'ArchWeekly <newsletter@archweekly.online',
+  NEWSLETTER_SUBJECT: 'ArchWeekly: This Week\'s Top Articles',
+  TOP_ARTICLES_COUNT: 5,
+  RATE_LIMIT_DELAY: 100,
+  NEWSLETTER_JSON: 'archweekly-curated.json',
+} as const;
 
 interface Article {
   rank: number;
@@ -41,12 +50,9 @@ interface SendResult {
 }
 
 function generateNewsletterHTML(data: NewsletterData, subscriberEmail: string): string {
-  const { metadata, topArticles } = data;
+  const { topArticles } = data;
+  const topFive = topArticles.slice(0, CONFIG.TOP_ARTICLES_COUNT);
   
-  // Take only top 5 articles
-  const topFive = topArticles.slice(0, 5);
-  
-  // Generate article cards - clean, minimal style
   const articlesHTML = topFive.map((article) => {
     const summary = article.description || article.reasoning;
     
@@ -73,10 +79,8 @@ function generateNewsletterHTML(data: NewsletterData, subscriberEmail: string): 
     `;
   }).join('');
 
-  // Create unsubscribe link
   const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`;
 
-  // Full email HTML - clean and professional
   return `
     <!DOCTYPE html>
     <html>
@@ -183,7 +187,7 @@ function generateNewsletterHTML(data: NewsletterData, subscriberEmail: string): 
       <body>
         <div class="container">
           <div class="header">
-            <h1>ScaleWeekly</h1>
+            <h1>ArchWeekly</h1>
             <p>DevOps & System Design Insights</p>
           </div>
           
@@ -200,17 +204,17 @@ function generateNewsletterHTML(data: NewsletterData, subscriberEmail: string): 
             <div class="divider"></div>
             
             <p style="margin: 24px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-              ScaleWeekly curates the best technical content from High Scalability, Pragmatic Engineer, Cloudflare, AWS, and developer communities. Each week we select articles that deepen your understanding of building resilient, scalable systems.
+              ArchWeekly curates the best technical content from High Scalability, Pragmatic Engineer, Cloudflare, AWS, and developer communities. Each week we select articles that deepen your understanding of building resilient, scalable systems.
             </p>
           </div>
           
           <div class="footer">
-            <p>Questions or feedback? <a href="mailto:support@scaleweekly.com">Let us know</a></p>
+            <p>Questions or feedback? <a href="mailto:support@archweekly.com">Let us know</a></p>
             <p style="margin-top: 16px;">
               <a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${process.env.FRONTEND_URL}">View in browser</a>
             </p>
             <p style="margin-top: 16px; opacity: 0.7;">
-              ScaleWeekly | ${new Date().getFullYear()}
+              ArchWeekly | ${new Date().getFullYear()}
             </p>
           </div>
         </div>
@@ -219,12 +223,8 @@ function generateNewsletterHTML(data: NewsletterData, subscriberEmail: string): 
   `;
 }
 
-// Helper function to delay between sends (rate limiting)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Send newsletter to a single recipient
- */
 async function sendToRecipient(
   email: string, 
   newsletterData: NewsletterData
@@ -233,14 +233,13 @@ async function sendToRecipient(
     const html = generateNewsletterHTML(newsletterData, email);
 
     const { data, error } = await resend.emails.send({
-      from: 'ScaleWeekly <onboarding@resend.dev>',
+      from: CONFIG.EMAIL_FROM,
       to: email,
-      subject: `ScaleWeekly: This Week's Top Articles`,
+      subject: CONFIG.NEWSLETTER_SUBJECT,
       html: html,
     });
 
     if (error) {
-      console.error(`❌ Failed to send to ${email}:`, error);
       return {
         email,
         success: false,
@@ -263,32 +262,22 @@ async function sendToRecipient(
   }
 }
 
-/**
- * Get all active subscribers (from both User and Subscriber models)
- */
 async function getAllActiveSubscribers(): Promise<string[]> {
   try {
-    // Get verified users who want newsletters
     const users = await User.find({ isVerified: true }).select('email');
     const userEmails = users.map(u => u.email);
 
-    // Get active subscribers
     const subscribers = await Subscriber.find({ isActive: true }).select('email');
     const subscriberEmails = subscribers.map(s => s.email);
 
-    // Combine and deduplicate
     const allEmails = [...new Set([...userEmails, ...subscriberEmails])];
     
     return allEmails;
   } catch (error) {
-    console.error('Error fetching subscribers:', error);
     throw error;
   }
 }
 
-/**
- * Send newsletter to all active subscribers
- */
 export async function sendNewsletterToAll(): Promise<{
   total: number;
   sent: number;
@@ -296,29 +285,19 @@ export async function sendNewsletterToAll(): Promise<{
   results: SendResult[];
   newsletterId?: string;
 }> {
-  console.log('\n' + '='.repeat(60));
-  console.log('📧 NEWSLETTER BROADCAST STARTING');
-  console.log('='.repeat(60) + '\n');
-
   try {
-    // 1. Load newsletter data
-    const jsonPath = path.join(process.cwd(), 'scaleweekly-curated.json');
+    const jsonPath = path.join(process.cwd(), CONFIG.NEWSLETTER_JSON);
     
     if (!fs.existsSync(jsonPath)) {
-      throw new Error('scaleweekly-curated.json not found. Run scraper first.');
+      throw new Error('Newsletter JSON not found. Run scraper first.');
     }
 
     const jsonData = fs.readFileSync(jsonPath, 'utf-8');
     const newsletterData: NewsletterData = JSON.parse(jsonData);
 
-    console.log(`✓ Loaded articles from ${newsletterData.metadata.generatedDate}`);
-    console.log(`✓ Top 5 articles selected\n`);
-
-    // 2. Get all active subscribers
     const subscribers = await getAllActiveSubscribers();
     
     if (subscribers.length === 0) {
-      console.log('⚠️  No active subscribers found.\n');
       return {
         total: 0,
         sent: 0,
@@ -327,14 +306,10 @@ export async function sendNewsletterToAll(): Promise<{
       };
     }
 
-    console.log(`📬 Found ${subscribers.length} active subscribers`);
-    console.log(`⏱️  Starting broadcast...\n`);
-
-    // 3. Save newsletter to database BEFORE sending
     const newsletter = new Newsletter({
-      title: `ScaleWeekly - ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+      title: `ArchWeekly - ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
       date: new Date(),
-      articles: newsletterData.topArticles.slice(0, 5).map((article, index) => ({
+      articles: newsletterData.topArticles.slice(0, CONFIG.TOP_ARTICLES_COUNT).map((article, index) => ({
         title: article.title,
         url: article.url,
         source: article.source,
@@ -349,9 +324,7 @@ export async function sendNewsletterToAll(): Promise<{
     });
 
     await newsletter.save();
-    console.log(`✓ Newsletter saved to DB (ID: ${newsletter._id})\n`);
 
-    // 4. Send to all subscribers with rate limiting
     const results: SendResult[] = [];
     let sent = 0;
     let failed = 0;
@@ -359,42 +332,24 @@ export async function sendNewsletterToAll(): Promise<{
     for (let i = 0; i < subscribers.length; i++) {
       const email = subscribers[i];
       
-      console.log(`[${i + 1}/${subscribers.length}] Sending to ${email}...`);
-      
       const result = await sendToRecipient(email, newsletterData);
       results.push(result);
 
       if (result.success) {
         sent++;
-        console.log(`  ✅ Sent (ID: ${result.emailId})`);
       } else {
         failed++;
-        console.log(`  ❌ Failed: ${result.error}`);
       }
 
-      // Rate limiting: Wait 100ms between sends (Resend allows 10 req/sec)
       if (i < subscribers.length - 1) {
-        await delay(100);
+        await delay(CONFIG.RATE_LIMIT_DELAY);
       }
     }
 
-    // 5. Update newsletter status in DB
     newsletter.status = 'sent';
     newsletter.sentTo = sent;
     newsletter.sentAt = new Date();
     await newsletter.save();
-
-    console.log(`✓ Newsletter marked as sent in DB\n`);
-
-    // 6. Summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 BROADCAST COMPLETE');
-    console.log('='.repeat(60));
-    console.log(`✅ Successfully sent: ${sent}`);
-    console.log(`❌ Failed: ${failed}`);
-    console.log(`📬 Total: ${subscribers.length}`);
-    console.log(`💾 Newsletter ID: ${newsletter._id}`);
-    console.log('='.repeat(60) + '\n');
 
     return {
       total: subscribers.length,
@@ -403,43 +358,26 @@ export async function sendNewsletterToAll(): Promise<{
       results,
       newsletterId: newsletter._id.toString(),
     };
-
   } catch (error) {
-    console.error('❌ Newsletter broadcast failed:', error);
     throw error;
   }
 }
 
-/**
- * Send test newsletter to a single email (for testing)
- */
 export async function sendTestNewsletter(recipientEmail: string): Promise<SendResult> {
-  console.log('\n📧 Sending test newsletter...\n');
-
   try {
-    const jsonPath = path.join(process.cwd(), 'scaleweekly-curated.json');
+    const jsonPath = path.join(process.cwd(), CONFIG.NEWSLETTER_JSON);
     
     if (!fs.existsSync(jsonPath)) {
-      throw new Error('scaleweekly-curated.json not found');
+      throw new Error('Newsletter JSON not found');
     }
 
     const jsonData = fs.readFileSync(jsonPath, 'utf-8');
     const newsletterData: NewsletterData = JSON.parse(jsonData);
 
-    console.log(`✓ Loaded articles from ${newsletterData.metadata.generatedDate}`);
-    
     const result = await sendToRecipient(recipientEmail, newsletterData);
-
-    if (result.success) {
-      console.log(`✅ Test email sent to ${recipientEmail}`);
-      console.log(`📧 Email ID: ${result.emailId}\n`);
-    } else {
-      console.log(`❌ Failed to send: ${result.error}\n`);
-    }
 
     return result;
   } catch (error) {
-    console.error('Failed:', error);
     throw error;
   }
 }

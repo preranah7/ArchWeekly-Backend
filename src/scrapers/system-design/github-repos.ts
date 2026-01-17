@@ -124,7 +124,7 @@ async function scrapeSystemDesignPrimer(): Promise<GitHubResource[]> {
     const repoUrl = 'https://raw.githubusercontent.com/donnemartin/system-design-primer/master/README.md';
     const response = await axios.get(repoUrl, {
       headers: {
-        'User-Agent': 'ScaleWeekly-SystemDesign-Scraper/1.0'
+        'User-Agent': 'ArchWeekly-SystemDesign-Scraper/1.0'
       },
       timeout: CONFIG.REQUEST_TIMEOUT,
     });
@@ -225,7 +225,7 @@ async function scrapeByteByteGo(): Promise<GitHubResource[]> {
     const repoUrl = 'https://raw.githubusercontent.com/ByteByteGoHq/system-design-101/main/README.md';
     const response = await axios.get(repoUrl, {
       headers: {
-        'User-Agent': 'ScaleWeekly-SystemDesign-Scraper/1.0'
+        'User-Agent': 'ArchWeekly-SystemDesign-Scraper/1.0'
       },
       timeout: CONFIG.REQUEST_TIMEOUT,
     });

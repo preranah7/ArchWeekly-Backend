@@ -1,3 +1,4 @@
+//src/scrapers/hackernews.ts
 import axios from 'axios';
 import { load } from 'cheerio';
 
@@ -8,7 +9,6 @@ interface Story {
   scraped_at: string;
 }
 
-// ScaleWeekly keywords
 const SCALE_KEYWORDS = [
   'redis', 'kafka', 'kubernetes', 'docker', 'microservices',
   'system design', 'scalability', 'distributed', 'scale',
@@ -18,6 +18,11 @@ const SCALE_KEYWORDS = [
   'monitoring', 'postgresql', 'mongodb', 'nginx'
 ];
 
+const CONFIG = {
+  BASE_URL: 'https://news.ycombinator.com/',
+  REQUEST_TIMEOUT: 10000,
+} as const;
+
 function isRelevant(title: string): boolean {
   const lowerTitle = title.toLowerCase();
   return SCALE_KEYWORDS.some(keyword => lowerTitle.includes(keyword));
@@ -25,14 +30,11 @@ function isRelevant(title: string): boolean {
 
 async function scrapeHackerNews(): Promise<Story[]> {
   try {
-    console.log('📡 Fetching HackerNews...');
+    const response = await axios.get<string>(CONFIG.BASE_URL, {
+      timeout: CONFIG.REQUEST_TIMEOUT,
+    });
     
-    const response = await axios.get<string>('https://news.ycombinator.com/');
-    const html = response.data;
-    
-    console.log('✅ Downloaded HTML');
-    
-    const $ = load(html);
+    const $ = load(response.data);
     const stories: Story[] = [];
     
     $('span.titleline').each((index, element) => {
@@ -40,30 +42,22 @@ async function scrapeHackerNews(): Promise<Story[]> {
       const title = titleLink.text();
       const url = titleLink.attr('href');
       
-      if (title && url) {
-        // Only add if relevant to ScaleWeekly
-        if (isRelevant(title)) {
-          const fullUrl = url.startsWith('http') 
-            ? url 
-            : `https://news.ycombinator.com/${url}`;
-          
-          stories.push({
-            title,
-            url: fullUrl,
-            source: 'hackernews',
-            scraped_at: new Date().toISOString()
-          });
-          
-          console.log(`✅ Relevant: ${title}`);
-        }
+      if (title && url && isRelevant(title)) {
+        const fullUrl = url.startsWith('http') 
+          ? url 
+          : `${CONFIG.BASE_URL}${url}`;
+        
+        stories.push({
+          title,
+          url: fullUrl,
+          source: 'hackernews',
+          scraped_at: new Date().toISOString()
+        });
       }
     });
     
-    console.log(`\n✅ Found ${stories.length} ScaleWeekly-relevant stories\n`);
     return stories;
-    
   } catch (error: any) {
-    console.error('❌ Error scraping HackerNews:', error.message);
     return [];
   }
 }

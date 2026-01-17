@@ -95,7 +95,7 @@ async function scoreBatch(
     },
   });
 
-  const prompt = `You are an expert curator for "ScaleWeekly System Design" - a section focused on helping engineers master system design, scalability, and distributed systems.
+  const prompt = `You are an expert curator for "ArchWeekly System Design" - a section focused on helping engineers master system design, scalability, and distributed systems.
 
 Analyze these ${batch.length} System Design resources (GitHub repos, YouTube videos, and engineering blogs) and score each from 1-10 based on:
 

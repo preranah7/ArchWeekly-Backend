@@ -28,8 +28,9 @@ app.use(
       'http://localhost:3000',
       'http://localhost:5173',
       'http://localhost:4173',  
-      'https://archweekly.online', // Your production domain
-      'https://www.archweekly.online' // www subdomain
+      'https://archweekly.online', // production domain
+      'https://www.archweekly.online',// www subdomain
+      'https://archweeklyfrontend.vercel.app' 
     ],
     credentials: true,
   })

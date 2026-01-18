@@ -1,8 +1,6 @@
 //src/services/newsletter-sender.ts
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
 import User from '../models/User';
 import Newsletter from '../models/Newsletter';
 import Subscriber from '../models/Subscriber';
@@ -12,11 +10,10 @@ dotenv.config();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const CONFIG = {
-  EMAIL_FROM: process.env.EMAIL_FROM || 'ArchWeekly <newsletter@archweekly.online',
+  EMAIL_FROM: process.env.EMAIL_FROM || 'ArchWeekly <newsletter@archweekly.online>',
   NEWSLETTER_SUBJECT: 'ArchWeekly: This Week\'s Top Articles',
   TOP_ARTICLES_COUNT: 5,
   RATE_LIMIT_DELAY: 100,
-  NEWSLETTER_JSON: 'archweekly-curated.json',
 } as const;
 
 interface Article {
@@ -209,7 +206,7 @@ function generateNewsletterHTML(data: NewsletterData, subscriberEmail: string): 
           </div>
           
           <div class="footer">
-            <p>Questions or feedback? <a href="mailto:support@archweekly.com">Let us know</a></p>
+            <p>Questions or feedback? <a href="mailto:newsletter@archweekly.online">Let us know</a></p>
             <p style="margin-top: 16px;">
               <a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${process.env.FRONTEND_URL}">View in browser</a>
             </p>
@@ -240,6 +237,7 @@ async function sendToRecipient(
     });
 
     if (error) {
+      console.error(`❌ Resend error for ${email}:`, error);
       return {
         email,
         success: false,
@@ -254,6 +252,7 @@ async function sendToRecipient(
     };
   } catch (error) {
     const err = error as Error;
+    console.error(`❌ Exception sending to ${email}:`, err);
     return {
       email,
       success: false,
@@ -264,16 +263,25 @@ async function sendToRecipient(
 
 async function getAllActiveSubscribers(): Promise<string[]> {
   try {
+    console.log('🔍 Fetching subscribers from database...');
+    
+    // Get verified users
     const users = await User.find({ isVerified: true }).select('email');
     const userEmails = users.map(u => u.email);
+    console.log(`👤 Found ${userEmails.length} verified users:`, userEmails);
 
+    // Get active subscribers
     const subscribers = await Subscriber.find({ isActive: true }).select('email');
     const subscriberEmails = subscribers.map(s => s.email);
+    console.log(`📬 Found ${subscriberEmails.length} active subscribers:`, subscriberEmails);
 
+    // Combine and deduplicate
     const allEmails = [...new Set([...userEmails, ...subscriberEmails])];
+    console.log(`📧 Total unique recipients: ${allEmails.length}`, allEmails);
     
     return allEmails;
   } catch (error) {
+    console.error('❌ Error fetching subscribers:', error);
     throw error;
   }
 }
@@ -286,18 +294,62 @@ export async function sendNewsletterToAll(): Promise<{
   newsletterId?: string;
 }> {
   try {
-    const jsonPath = path.join(process.cwd(), CONFIG.NEWSLETTER_JSON);
+    console.log('📰 Starting newsletter send process...');
     
-    if (!fs.existsSync(jsonPath)) {
-      throw new Error('Newsletter JSON not found. Run scraper first.');
+    // Import Article model dynamically to avoid circular dependencies
+    const Article = (await import('../models/Article')).default;
+    
+    // Fetch top 5 ranked articles from database
+    const topArticles = await Article.find({ 
+      rank: { $exists: true, $ne: null } 
+    })
+      .sort({ rank: 1 })
+      .limit(CONFIG.TOP_ARTICLES_COUNT);
+
+    console.log(`📊 Found ${topArticles.length} ranked articles in database`);
+
+    if (!topArticles || topArticles.length === 0) {
+      console.log('⚠️ No ranked articles found!');
+      throw new Error('No ranked articles found. Run the workflow first to scrape and score articles.');
     }
 
-    const jsonData = fs.readFileSync(jsonPath, 'utf-8');
-    const newsletterData: NewsletterData = JSON.parse(jsonData);
+    // Create newsletter data structure from database articles
+    const newsletterData: NewsletterData = {
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        generatedDate: new Date().toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        totalScraped: topArticles.length,
+        topSelected: CONFIG.TOP_ARTICLES_COUNT,
+        poweredBy: 'ArchWeekly AI'
+      },
+      topArticles: topArticles.map(article => ({
+        rank: article.rank || 0,
+        title: article.title,
+        url: article.url,
+        source: article.source,
+        description: article.description || article.reasoning || '',
+        score: article.score || 0,
+        category: article.category || 'General',
+        reasoning: article.reasoning || '',
+        keyInsights: article.keyInsights || []
+      }))
+    };
 
+    console.log('📝 Newsletter data prepared:', {
+      date: newsletterData.metadata.generatedDate,
+      articles: newsletterData.topArticles.length
+    });
+
+    // Get all subscribers
     const subscribers = await getAllActiveSubscribers();
+    console.log(`📧 Preparing to send to ${subscribers.length} subscribers`);
     
     if (subscribers.length === 0) {
+      console.log('⚠️ No subscribers found! Returning empty result.');
       return {
         total: 0,
         sent: 0,
@@ -306,10 +358,11 @@ export async function sendNewsletterToAll(): Promise<{
       };
     }
 
+    // Create newsletter record
     const newsletter = new Newsletter({
-      title: `ArchWeekly - ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+      title: `ArchWeekly - ${newsletterData.metadata.generatedDate}`,
       date: new Date(),
-      articles: newsletterData.topArticles.slice(0, CONFIG.TOP_ARTICLES_COUNT).map((article, index) => ({
+      articles: newsletterData.topArticles.map((article, index) => ({
         title: article.title,
         url: article.url,
         source: article.source,
@@ -324,32 +377,42 @@ export async function sendNewsletterToAll(): Promise<{
     });
 
     await newsletter.save();
+    console.log(`💾 Newsletter record created with ID: ${newsletter._id}`);
 
+    // Send emails to all subscribers
     const results: SendResult[] = [];
     let sent = 0;
     let failed = 0;
 
+    console.log('📨 Starting email sending...');
     for (let i = 0; i < subscribers.length; i++) {
       const email = subscribers[i];
+      console.log(`📨 Sending to ${email} (${i + 1}/${subscribers.length})...`);
       
       const result = await sendToRecipient(email, newsletterData);
       results.push(result);
 
       if (result.success) {
         sent++;
+        console.log(`✅ Sent successfully to ${email}`);
       } else {
         failed++;
+        console.log(`❌ Failed to send to ${email}: ${result.error}`);
       }
 
+      // Rate limiting
       if (i < subscribers.length - 1) {
         await delay(CONFIG.RATE_LIMIT_DELAY);
       }
     }
 
+    // Update newsletter record
     newsletter.status = 'sent';
     newsletter.sentTo = sent;
     newsletter.sentAt = new Date();
     await newsletter.save();
+
+    console.log(`✅ Newsletter send complete! Total: ${subscribers.length}, Sent: ${sent}, Failed: ${failed}`);
 
     return {
       total: subscribers.length,
@@ -359,25 +422,72 @@ export async function sendNewsletterToAll(): Promise<{
       newsletterId: newsletter._id.toString(),
     };
   } catch (error) {
+    console.error('❌ Error in sendNewsletterToAll:', error);
     throw error;
   }
 }
 
 export async function sendTestNewsletter(recipientEmail: string): Promise<SendResult> {
   try {
-    const jsonPath = path.join(process.cwd(), CONFIG.NEWSLETTER_JSON);
+    console.log(`🧪 Sending test newsletter to ${recipientEmail}...`);
     
-    if (!fs.existsSync(jsonPath)) {
-      throw new Error('Newsletter JSON not found');
+    // Import Article model dynamically
+    const Article = (await import('../models/Article')).default;
+    
+    // Fetch top 5 ranked articles from database
+    const topArticles = await Article.find({ 
+      rank: { $exists: true, $ne: null } 
+    })
+      .sort({ rank: 1 })
+      .limit(CONFIG.TOP_ARTICLES_COUNT);
+
+    console.log(`📊 Found ${topArticles.length} ranked articles for test email`);
+
+    if (!topArticles || topArticles.length === 0) {
+      console.log('⚠️ No ranked articles found for test!');
+      throw new Error('No ranked articles found. Run the workflow first to scrape and score articles.');
     }
 
-    const jsonData = fs.readFileSync(jsonPath, 'utf-8');
-    const newsletterData: NewsletterData = JSON.parse(jsonData);
+    // Create newsletter data structure
+    const newsletterData: NewsletterData = {
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        generatedDate: new Date().toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        totalScraped: topArticles.length,
+        topSelected: CONFIG.TOP_ARTICLES_COUNT,
+        poweredBy: 'ArchWeekly AI'
+      },
+      topArticles: topArticles.map(article => ({
+        rank: article.rank || 0,
+        title: article.title,
+        url: article.url,
+        source: article.source,
+        description: article.description || article.reasoning || '',
+        score: article.score || 0,
+        category: article.category || 'General',
+        reasoning: article.reasoning || '',
+        keyInsights: article.keyInsights || []
+      }))
+    };
 
+    console.log('📝 Test newsletter data prepared');
+
+    // Send test email
     const result = await sendToRecipient(recipientEmail, newsletterData);
+    
+    if (result.success) {
+      console.log(`✅ Test email sent successfully to ${recipientEmail}`);
+    } else {
+      console.log(`❌ Test email failed: ${result.error}`);
+    }
 
     return result;
   } catch (error) {
+    console.error('❌ Error in sendTestNewsletter:', error);
     throw error;
   }
 }
